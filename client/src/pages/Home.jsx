@@ -174,7 +174,7 @@ export default function Home() {
 
       {/* ── QUICK BOOKING BAR ── */}
       <div className="bg-maroon py-5 px-6 md:px-14">
-        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={e => { e.preventDefault(); window.location.href = '/booking' }}>
+        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={e => { e.preventDefault(); window.location.href = '/rooms' }}>
           <DateRangePicker onDateChange={handleDateChange} />
           
           <GuestSelector onChange={(g) => console.log('Guests:', g)} />

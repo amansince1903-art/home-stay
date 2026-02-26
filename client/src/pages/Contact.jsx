@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 import PageHeader from '../components/PageHeader'
 
 export default function Contact() {
-  const [form, setForm]     = useState({ name: '', email: '', phone: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle')
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -11,12 +13,18 @@ export default function Contact() {
     e.preventDefault()
     setStatus('loading')
     try {
-      const res  = await fetch('/api/inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-      const json = await res.json()
-      if (json.success) setStatus('success')
-      else throw new Error(json.message)
-    } catch {
-      setStatus('success') // show success anyway in frontend-only mode
+      const { data } = await axios.post('/api/contacts', form)
+      if (data.success) {
+        setStatus('success')
+        toast.success('Message sent successfully!')
+        setForm({ name: '', email: '', phone: '', subject: '', message: '' })
+      } else {
+        throw new Error(data.message)
+      }
+    } catch (error) {
+      console.error('Contact form error:', error)
+      toast.error(error.response?.data?.message || 'Failed to send message. Please try again.')
+      setStatus('idle')
     }
   }
 

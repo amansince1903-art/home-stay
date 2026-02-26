@@ -1,20 +1,131 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import PageHeader from '../components/PageHeader';
+import GuestSelector from '../components/GuestSelector';
+import RoomSelector from '../components/RoomSelector';
+
+/* ── Amenities Data by Category ── */
+const amenitiesByCategory = [
+  {
+    category: 'Bathroom',
+    items: [
+      { icon: '🚿', label: 'Hot Water' },
+      { icon: '🧴', label: 'Shampoo & Conditioner' },
+      { icon: '🧼', label: 'Body Soap' },
+      { icon: '🪥', label: 'Cleaning Products' },
+      { icon: '💆', label: 'Hairdryer' },
+    ]
+  },
+  {
+    category: 'Bedroom',
+    items: [
+      { icon: '🛏', label: 'Fresh Linen & Towels' },
+      { icon: '❄️', label: 'Air Conditioning' },
+      { icon: '📺', label: 'TV in Room' },
+      { icon: '🔒', label: 'Locker / Safe' },
+      { icon: '🪟', label: 'Courtyard View' },
+    ]
+  },
+  {
+    category: 'Services',
+    items: [
+      { icon: '🍳', label: 'Daily Breakfast (Awadhi)' },
+      { icon: '🚗', label: 'Airport / Station Pickup' },
+      { icon: '🏛', label: 'Heritage Walking Tour' },
+      { icon: '🎭', label: 'Cultural Performances' },
+      { icon: '🧹', label: 'Daily Housekeeping' },
+    ]
+  },
+  {
+    category: 'Property',
+    items: [
+      { icon: '📶', label: 'Free WiFi' },
+      { icon: '🌿', label: 'Garden Access' },
+      { icon: '⛲', label: 'Courtyard with Fountain' },
+      { icon: '🅿️', label: 'Free Parking' },
+      { icon: '🛎', label: '24/7 Host Support' },
+    ]
+  },
+]
+
+const allAmenities = amenitiesByCategory.flatMap(c => c.items)
+
+/* ── Amenities Modal ── */
+function AmenitiesModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    const handleEsc = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleEsc)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', handleEsc)
+    }
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <h2 className="font-serif text-xl font-semibold">What this place offers</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors bg-transparent border-none cursor-pointer text-lg"
+          >✕</button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 px-6 py-4">
+          {amenitiesByCategory.map(({ category, items }) => (
+            <div key={category} className="mb-6">
+              <h3 className="font-serif text-base font-semibold text-ink mb-3">{category}</h3>
+              <div className="space-y-0 divide-y divide-gray-100">
+                {items.map(({ icon, label }) => (
+                  <div key={label} className="flex items-center gap-4 py-3">
+                    <span className="text-2xl w-8 text-center">{icon}</span>
+                    <span className="text-sm font-hind text-ink">{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="w-full bg-ink text-white text-sm font-hind tracking-wider uppercase py-3 rounded-lg hover:bg-gray-800 transition-colors border-none cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function NewBooking() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showAmenitiesModal, setShowAmenitiesModal] = useState(false)
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [form, setForm] = useState({
-    numberOfRooms: '',
+    numberOfRooms: 1,
     checkIn: '',
     checkOut: '',
-    guests: '',
+    guests: { adults: 2, children: 0, infants: 0 },
     specialRequests: ''
   });
   const [availability, setAvailability] = useState(null);
@@ -23,107 +134,58 @@ export default function NewBooking() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
+  useEffect(() => { fetchRooms(); }, []);
 
   const fetchRooms = async () => {
     setLoadingRooms(true);
     try {
       const { data } = await axios.get('/api/rooms');
-      if (data.success && data.data) {
-        setRooms(data.data);
-      } else {
-        toast.error('No rooms available');
-      }
+      if (data.success && data.data) setRooms(data.data);
+      else toast.error('No rooms available');
     } catch (error) {
-      console.error('Error fetching rooms:', error);
       toast.error('Failed to load rooms. Please refresh the page.');
     } finally {
       setLoadingRooms(false);
-    }
-  }; 
-
-  const checkAvailability = async () => {
-    if (!form.numberOfRooms || !form.checkIn || !form.checkOut) return;
-
-    try {
-      const availableCount = rooms.filter(room => room.inventory > 0).length;
-      setAvailability({ 
-        available: parseInt(form.numberOfRooms) <= availableCount,
-        availableRooms: availableCount,
-        totalRooms: rooms.length
-      });
-      if (parseInt(form.numberOfRooms) > availableCount) {
-        toast.warning(`Only ${availableCount} rooms available for selected dates`);
-      }
-    } catch (error) {
-      toast.error('Failed to check availability');
     }
   };
 
   useEffect(() => {
     if (form.numberOfRooms && form.checkIn && form.checkOut) {
-      checkAvailability();
+      const availableCount = rooms.filter(room => room.inventory > 0).length;
+      setAvailability({
+        available: parseInt(form.numberOfRooms) <= availableCount,
+        availableRooms: availableCount,
+        totalRooms: rooms.length
+      });
     }
-  }, [form.numberOfRooms, form.checkIn, form.checkOut]);
+  }, [form.numberOfRooms, form.checkIn, form.checkOut, rooms]);
 
-  const nights = form.checkIn && form.checkOut 
-    ? Math.ceil((new Date(form.checkOut) - new Date(form.checkIn)) / (1000 * 60 * 60 * 24))
-    : 0;
-  
-  const avgRoomPrice = rooms.length > 0 
-    ? rooms.reduce((sum, room) => sum + room.price, 0) / rooms.length 
-    : 0;
-  
-  const totalPrice = form.numberOfRooms && nights > 0 
-    ? Math.round(avgRoomPrice * parseInt(form.numberOfRooms) * nights)
-    : 0;
-
-  const validateDates = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkIn = new Date(form.checkIn);
-    const checkOut = new Date(form.checkOut);
-
-    if (checkIn < today) {
-      toast.error('Check-in date must be today or later');
-      return false;
-    }
-
-    if (checkOut <= checkIn) {
-      toast.error('Check-out date must be after check-in date');
-      return false;
-    }
-
-    return true;
-  };
+  const nights = form.checkIn && form.checkOut
+    ? Math.ceil((new Date(form.checkOut) - new Date(form.checkIn)) / (1000 * 60 * 60 * 24)) : 0;
+  const avgRoomPrice = rooms.length > 0
+    ? rooms.reduce((sum, room) => sum + room.price, 0) / rooms.length : 0;
+  const totalGuests = form.guests.adults + form.guests.children + form.guests.infants;
+  const totalPrice = form.numberOfRooms && nights > 0
+    ? Math.round(avgRoomPrice * parseInt(form.numberOfRooms) * nights) : 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateDates()) {
-      return;
-    }
-
-    if (!availability?.available) {
-      toast.error('Not enough rooms available for selected dates');
-      return;
-    }
-
+    const todayDate = new Date(); todayDate.setHours(0,0,0,0);
+    const checkIn = new Date(form.checkIn);
+    const checkOut = new Date(form.checkOut);
+    if (checkIn < todayDate) { toast.error('Check-in must be today or later'); return; }
+    if (checkOut <= checkIn) { toast.error('Check-out must be after check-in'); return; }
+    if (!availability?.available) { toast.error('Not enough rooms available'); return; }
     setLoading(true);
     try {
-      // Book the first available room (simplified logic)
       const availableRoom = rooms.find(r => r.inventory > 0);
-      
-      const { data } = await axios.post('/api/bookings', {
+      await axios.post('/api/bookings', {
         roomId: availableRoom._id,
         checkIn: form.checkIn,
         checkOut: form.checkOut,
-        guests: parseInt(form.guests),
+        guests: totalGuests,
         specialRequests: form.specialRequests
       });
-      
       setStatus('success');
       toast.success('Booking created successfully!');
       setTimeout(() => navigate('/dashboard'), 2000);
@@ -143,8 +205,13 @@ export default function NewBooking() {
         subtitle="Create your booking with real-time availability"
       />
 
+      {/* Amenities Modal */}
+      {showAmenitiesModal && <AmenitiesModal onClose={() => setShowAmenitiesModal(false)} />}
+
       <section className="py-16 px-6 md:px-14 bg-ivory">
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-10">
+
+          {/* ── FORM ── */}
           <div className="md:col-span-2">
             <h2 className="font-serif text-2xl font-normal mb-6">Booking Details</h2>
 
@@ -167,96 +234,42 @@ export default function NewBooking() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Number of Rooms *</label>
-                  <select
-                    name="numberOfRooms"
-                    required
-                    value={form.numberOfRooms}
-                    onChange={(e) => setForm({ ...form, numberOfRooms: e.target.value })}
-                    className="form-input-light w-full"
-                  >
-                    <option value="">Select number of rooms</option>
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option key={n} value={n}>
-                        {n} Room{n > 1 ? 's' : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-mud font-hind mt-1">
-                    {rooms.length} rooms available at the property
-                  </p>
-                </div>
+
+                <RoomSelector onChange={(r) => setForm({ ...form, numberOfRooms: r })} variant="light" />
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Check-in Date *</label>
-                    <input
-                      type="date"
-                      name="checkIn"
-                      required
-                      min={today}
-                      value={form.checkIn}
+                    <input type="date" name="checkIn" required min={today} value={form.checkIn}
                       onChange={(e) => {
                         const newCheckIn = e.target.value;
-                        setForm({ 
-                          ...form, 
-                          checkIn: newCheckIn,
-                          checkOut: form.checkOut && form.checkOut <= newCheckIn ? '' : form.checkOut
-                        });
+                        setForm({ ...form, checkIn: newCheckIn, checkOut: form.checkOut && form.checkOut <= newCheckIn ? '' : form.checkOut });
                       }}
-                      className="form-input-light w-full"
-                    />
+                      className="form-input-light w-full" />
                     <p className="text-xs text-mud font-hind mt-1">Must be today or later</p>
                   </div>
-
                   <div>
                     <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Check-out Date *</label>
-                    <input
-                      type="date"
-                      name="checkOut"
-                      required
+                    <input type="date" name="checkOut" required
                       min={form.checkIn ? new Date(new Date(form.checkIn).getTime() + 86400000).toISOString().split('T')[0] : today}
                       value={form.checkOut}
                       onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
-                      className="form-input-light w-full"
-                      disabled={!form.checkIn}
-                    />
-                    <p className="text-xs text-mud font-hind mt-1">
-                      {form.checkIn ? 'Must be after check-in' : 'Select check-in first'}
-                    </p>
+                      className="form-input-light w-full" disabled={!form.checkIn} />
+                    <p className="text-xs text-mud font-hind mt-1">{form.checkIn ? 'Must be after check-in' : 'Select check-in first'}</p>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Number of Guests *</label>
-                  <select
-                    name="guests"
-                    required
-                    value={form.guests}
-                    onChange={(e) => setForm({ ...form, guests: e.target.value })}
-                    className="form-input-light w-full"
-                  >
-                    <option value="">Select</option>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                      <option key={n} value={n}>
-                        {n} Guest{n > 1 ? 's' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <GuestSelector onChange={(g) => setForm({ ...form, guests: g })} variant="light" />
 
                 {form.numberOfRooms && form.checkIn && form.checkOut && (
                   <div className="bg-blue-50 border border-blue-300 p-4 rounded-sm">
-                    <p className="text-sm font-hind text-blue-800 mb-2">
-                      🔍 Checking availability...
-                    </p>
+                    <p className="text-sm font-hind text-blue-800 mb-2">🔍 Checking availability...</p>
                     {availability && (
                       <div className={`p-3 rounded-sm mt-2 ${availability.available ? 'bg-green-50 border border-green-300' : 'bg-red-50 border border-red-300'}`}>
                         <p className={`text-sm font-hind font-semibold ${availability.available ? 'text-green-800' : 'text-red-800'}`}>
-                          {availability.available 
+                          {availability.available
                             ? `✓ Available! (${availability.availableRooms} of ${availability.totalRooms} rooms available)`
-                            : `✕ Not enough rooms available (Only ${availability.availableRooms} available, you requested ${form.numberOfRooms})`}
+                            : `✕ Only ${availability.availableRooms} available, you requested ${form.numberOfRooms}`}
                         </p>
                       </div>
                     )}
@@ -265,23 +278,18 @@ export default function NewBooking() {
 
                 <div>
                   <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Special Requests</label>
-                  <textarea
-                    name="specialRequests"
-                    rows={4}
-                    placeholder="Dietary needs, local tours, special occasions..."
+                  <textarea rows={4} placeholder="Dietary needs, local tours, special occasions..."
                     value={form.specialRequests}
                     onChange={(e) => setForm({ ...form, specialRequests: e.target.value })}
-                    className="form-input-light w-full resize-y"
-                  />
+                    className="form-input-light w-full resize-y" />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading || !availability?.available || !form.numberOfRooms || !form.checkIn || !form.checkOut || !form.guests}
-                  className="w-full bg-saffron text-white text-sm font-hind tracking-widest uppercase py-3.5 rounded-sm hover:bg-saf-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                <button type="submit"
+                  disabled={loading || !availability?.available || !form.checkIn || !form.checkOut || totalGuests === 0}
+                  className="w-full bg-saffron text-white text-sm font-hind tracking-widest uppercase py-3.5 rounded-sm hover:bg-saf-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed border-none cursor-pointer"
                 >
-                  {loading ? 'Creating Booking...' : 
-                   !form.numberOfRooms || !form.checkIn || !form.checkOut || !form.guests ? 'Fill all required fields' :
+                  {loading ? 'Creating Booking...' :
+                   !form.checkIn || !form.checkOut || totalGuests === 0 ? 'Fill all required fields' :
                    !availability ? 'Checking availability...' :
                    !availability.available ? 'Not enough rooms available' :
                    `Confirm Booking - ₹${totalPrice.toLocaleString()}`}
@@ -290,23 +298,25 @@ export default function NewBooking() {
             )}
           </div>
 
+          {/* ── SIDEBAR ── */}
           <div className="space-y-5">
+
+            {/* Booking Summary */}
             {form.numberOfRooms && nights > 0 && (
-              <div className="bg-white p-5 rounded-sm border border-warm shadow-sm">
+              <div className="bg-white p-5 rounded-sm border border-parchment shadow-sm">
                 <h3 className="font-serif text-lg font-semibold mb-3">Booking Summary</h3>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-hind">
-                    <span className="text-mud">Rooms:</span>
-                    <span className="font-semibold">{form.numberOfRooms}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-hind">
-                    <span className="text-mud">Nights:</span>
-                    <span className="font-semibold">{nights}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-hind">
-                    <span className="text-mud">Avg. price/room/night:</span>
-                    <span className="font-semibold">₹{Math.round(avgRoomPrice).toLocaleString()}</span>
-                  </div>
+                  {[
+                    ['Rooms', form.numberOfRooms],
+                    ['Guests', `${totalGuests} (${form.guests.adults}A, ${form.guests.children}C, ${form.guests.infants}I)`],
+                    ['Nights', nights],
+                    ['Avg. price/room/night', '₹' + Math.round(avgRoomPrice).toLocaleString()],
+                  ].map(([label, val]) => (
+                    <div key={label} className="flex justify-between text-sm font-hind">
+                      <span className="text-mud">{label}:</span>
+                      <span className="font-semibold">{val}</span>
+                    </div>
+                  ))}
                   <div className="flex justify-between text-lg font-serif border-t border-parchment pt-2 mt-2">
                     <span>Total:</span>
                     <span className="text-saffron font-bold">₹{totalPrice.toLocaleString()}</span>
@@ -315,14 +325,34 @@ export default function NewBooking() {
               </div>
             )}
 
-            <div className="bg-parchment p-5 rounded-sm border border-warm">
-              <h3 className="font-serif text-lg font-semibold mb-3">What's Included</h3>
-              <ul className="space-y-1.5 list-none">
-                {['Daily breakfast', 'Airport pickup', 'Heritage tour', 'Free WiFi', '24/7 support'].map(f => (
-                  <li key={f} className="feat-item text-sm">{f}</li>
+            {/* Amenities - Airbnb Style */}
+            <div className="bg-white p-5 rounded-sm border border-parchment shadow-sm">
+              <h3 className="font-serif text-lg font-semibold mb-4">What this place offers</h3>
+              <div className="divide-y divide-gray-100">
+                {allAmenities.slice(0, 6).map(({ icon, label }) => (
+                  <div key={label} className="flex items-center gap-3 py-3">
+                    <span className="text-xl w-7 text-center">{icon}</span>
+                    <span className="text-sm font-hind text-ink">{label}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
+              <button
+                onClick={() => setShowAmenitiesModal(true)}
+                className="mt-4 w-full border border-gray-800 text-ink text-xs font-hind tracking-wider uppercase py-2.5 rounded-lg hover:bg-gray-50 transition-colors bg-transparent cursor-pointer"
+              >
+                Show all {allAmenities.length} amenities
+              </button>
             </div>
+
+            {/* Need Help */}
+            <div className="bg-maroon p-5 rounded-sm text-white">
+              <h3 className="font-serif text-lg mb-2">Need Help?</h3>
+              <p className="text-white/70 text-xs font-hind mb-3">Call or WhatsApp us for instant confirmation.</p>
+              <a href="tel:+919876543210" className="block text-center bg-saffron text-white text-xs font-hind tracking-widest uppercase py-2.5 rounded-sm hover:bg-saf-dark transition-colors no-underline">
+                📞 Call Now
+              </a>
+            </div>
+
           </div>
         </div>
       </section>

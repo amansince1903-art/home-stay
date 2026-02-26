@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-export default function RoomSelector({ onChange }) {
+export default function RoomSelector({ onChange, variant = 'dark' }) {
   const [open, setOpen] = useState(false)
   const [rooms, setRooms] = useState(1)
   const ref = useRef(null)
@@ -18,18 +18,30 @@ export default function RoomSelector({ onChange }) {
     onChange && onChange(newVal)
   }
 
+  // Styling based on variant
+  const isDark = variant === 'dark'
+  const labelClass = isDark 
+    ? "text-turmeric text-[0.6rem] tracking-widest uppercase font-hind"
+    : "text-ink text-xs tracking-widest uppercase font-hind font-semibold"
+  
+  const buttonClass = isDark
+    ? "bg-white/10 border border-white/20 text-white px-3 py-2.5 text-sm rounded-sm outline-none font-hind text-left flex items-center justify-between hover:bg-white/15 transition-colors"
+    : "bg-white border-2 border-saffron text-ink px-3 py-2.5 text-sm rounded-sm outline-none font-hind text-left flex items-center justify-between hover:bg-orange-50 transition-colors shadow-sm"
+  
+  const arrowClass = isDark ? "text-white/50 text-xs" : "text-saffron text-xs font-bold"
+
   return (
     <div ref={ref} className="relative flex flex-col gap-1 flex-1 min-w-[160px]">
-      <label className="text-turmeric text-[0.6rem] tracking-widest uppercase font-hind">Rooms</label>
+      <label className={labelClass}>Rooms</label>
 
       {/* Trigger button */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="bg-white/10 border border-white/20 text-white px-3 py-2.5 text-sm rounded-sm outline-none font-hind text-left flex items-center justify-between hover:bg-white/15 transition-colors"
+        className={buttonClass}
       >
-        <span>🏠 {rooms} Room{rooms > 1 ? 's' : ''}</span>
-        <span className="text-white/50 text-xs">{open ? '▲' : '▼'}</span>
+        <span className={isDark ? "" : "font-semibold"}>🏠 {rooms} Room{rooms > 1 ? 's' : ''}</span>
+        <span className={arrowClass}>{open ? '▲' : '▼'}</span>
       </button>
 
       {/* Popup */}
