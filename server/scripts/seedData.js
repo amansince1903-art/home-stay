@@ -23,8 +23,8 @@ const seedData = async () => {
 
     const rooms = await Room.insertMany([
       {
-        name: 'Royal Haveli Suite',
-        slug: 'royal-haveli-suite',
+        name: 'Bedroom 1',
+        slug: 'bedroom-1',
         price: 2500,
         capacity: 2,
         inventory: 2,
@@ -34,8 +34,8 @@ const seedData = async () => {
         status: 'active'
       },
       {
-        name: 'Gangamahal Room',
-        slug: 'gangamahal-room',
+        name: 'Bedroom 2',
+        slug: 'bedroom-2',
         price: 1800,
         capacity: 2,
         inventory: 2,
@@ -45,14 +45,47 @@ const seedData = async () => {
         status: 'active'
       },
       {
-        name: 'Family Kothi',
-        slug: 'family-kothi',
+        name: 'Bedroom 3',
+        slug: 'bedroom-3',
         price: 4200,
         capacity: 6,
         inventory: 1,
         description: '3-bedroom kothi with private kitchen, sit-out garden & authentic home cooking.',
         amenities: ['3 Bedrooms', 'Private Kitchen', 'Garden', 'AC in all rooms', 'All Meals Included', 'Free WiFi'],
         image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
+        status: 'active'
+      },
+      {
+        name: 'Bedroom 4',
+        slug: 'bedroom-4',
+        price: 3500,
+        capacity: 3,
+        inventory: 1,
+        description: 'Luxurious suite with royal decor, antique furniture, and panoramic city views.',
+        amenities: ['King Bed', 'Sofa Bed', 'AC + Heater', 'Free WiFi', 'City View', 'Breakfast & Dinner', 'Jacuzzi'],
+        image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
+        status: 'active'
+      },
+      {
+        name: 'Bedroom 5',
+        slug: 'bedroom-5',
+        price: 2200,
+        capacity: 2,
+        inventory: 3,
+        description: 'Elegant room with traditional jali windows, carved wooden furniture & modern amenities.',
+        amenities: ['Queen Bed', 'AC', 'Free WiFi', 'Heritage Decor', 'Breakfast Included', 'Mini Bar'],
+        image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80',
+        status: 'active'
+      },
+      {
+        name: 'Bedroom 6',
+        slug: 'bedroom-6',
+        price: 5000,
+        capacity: 4,
+        inventory: 1,
+        description: 'Private villa with lush garden, outdoor seating, and complete privacy for families.',
+        amenities: ['2 Bedrooms', 'Private Garden', 'Kitchen', 'AC in all rooms', 'All Meals', 'Free WiFi', 'BBQ Area'],
+        image: 'https://images.unsplash.com/photo-1602343168117-bb8ffe3e2e9f?w=800&q=80',
         status: 'active'
       }
     ]);

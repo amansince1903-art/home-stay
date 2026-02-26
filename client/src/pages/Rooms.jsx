@@ -1,33 +1,26 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
 import PageHeader from '../components/PageHeader'
 import useReveal from '../components/useReveal'
 
-const rooms = [
-  {
-    id: 1, name: 'Royal Haveli Suite', price: '₹2,500',
-    capacity: '2 Guests', badge: 'Most Popular', badgeColor: 'bg-saffron',
-    status: 'Available', statusColor: 'bg-forest',
-    img: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
-    desc: 'A grand suite with traditional Mughal arches, hand-painted walls, and a private courtyard view. Experience the grandeur of old UP nobility from the comfort of modern amenities.',
-    amenities: ['King Bed', 'AC + Heater', 'Free WiFi', 'Courtyard View', 'Breakfast Included', 'Private Bath'],
-  },
-  {
-    id: 2, name: 'Gangamahal Room', price: '₹1,800',
-    capacity: '2 Guests', badge: null, badgeColor: '',
-    status: 'Available', statusColor: 'bg-forest',
-    img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80',
-    desc: 'Overlooking the sacred Ganga with a wooden balcony, antique furniture, and serene views. Wake up to the sounds of aarti and river boats — a deeply spiritual experience.',
-    amenities: ['Double Bed', 'AC', 'Free WiFi', 'Ganga View', 'Breakfast Included', 'Balcony'],
-  },
-  {
-    id: 3, name: 'Family Kothi', price: '₹4,200',
-    capacity: 'Up to 6 Guests', badge: null, badgeColor: '',
-    status: 'Only 1 Left', statusColor: 'bg-maroon',
-    img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
-    desc: 'A spacious 3-room kothi with a private kitchen, sit-out garden, and authentic UP home cooking prepared by our host family. Perfect for family gatherings and extended stays.',
-    amenities: ['3 Bedrooms', 'Private Kitchen', 'Garden', 'AC in all rooms', 'All Meals Included', 'Free WiFi'],
-  },
-]
+// Import local room images
+import room1 from '../assets/images/room 1.jpg'
+import room2 from '../assets/images/room 2.png'
+import room3 from '../assets/images/room 3.jpg'
+import room4 from '../assets/images/room 4.png'
+import room5 from '../assets/images/room 5.png'
+import room6 from '../assets/images/-room 6.jpg'
+
+// Map room images by bedroom number
+const roomImages = {
+  'Bedroom 1': room1,
+  'Bedroom 2': room2,
+  'Bedroom 3': room3,
+  'Bedroom 4': room4,
+  'Bedroom 5': room5,
+  'Bedroom 6': room6
+}
 
 function RoomCard({ room, reverse }) {
   const ref = useReveal()
@@ -58,6 +51,36 @@ function RoomCard({ room, reverse }) {
 }
 
 export default function Rooms() {
+  const [rooms, setRooms] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/rooms')
+        const roomsData = response.data.data.map(room => ({
+          id: room._id,
+          name: room.name,
+          price: `₹${room.price.toLocaleString()}`,
+          capacity: `Up to ${room.capacity} Guest${room.capacity > 1 ? 's' : ''}`,
+          badge: room.name === 'Bedroom 1' ? 'Most Popular' : null,
+          badgeColor: room.name === 'Bedroom 1' ? 'bg-saffron' : '',
+          status: room.inventory > 1 ? 'Available' : `Only ${room.inventory} Left`,
+          statusColor: room.inventory > 1 ? 'bg-forest' : 'bg-maroon',
+          img: roomImages[room.name] || room.image, // Use local image if available
+          desc: room.description,
+          amenities: room.amenities
+        }))
+        setRooms(roomsData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching rooms:', error)
+        setLoading(false)
+      }
+    }
+    fetchRooms()
+  }, [])
+
   return (
     <>
       <PageHeader
@@ -67,7 +90,17 @@ export default function Rooms() {
       />
       <section className="py-16 px-6 md:px-14 bg-ivory">
         <div className="max-w-5xl mx-auto space-y-12">
-          {rooms.map((room, i) => <RoomCard key={room.id} room={room} reverse={i % 2 === 1} />)}
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-mud font-hind text-lg">Loading rooms...</p>
+            </div>
+          ) : rooms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-mud font-hind text-lg">No rooms available</p>
+            </div>
+          ) : (
+            rooms.map((room, i) => <RoomCard key={room.id} room={room} reverse={i % 2 === 1} />)
+          )}
         </div>
       </section>
     </>

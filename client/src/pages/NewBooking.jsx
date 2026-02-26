@@ -11,7 +11,7 @@ export default function NewBooking() {
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [form, setForm] = useState({
-    roomId: '',
+    numberOfRooms: '',
     checkIn: '',
     checkOut: '',
     guests: '',
@@ -31,7 +31,6 @@ export default function NewBooking() {
     setLoadingRooms(true);
     try {
       const { data } = await axios.get('/api/rooms');
-      console.log('Rooms fetched:', data);
       if (data.success && data.data) {
         setRooms(data.data);
       } else {
@@ -46,17 +45,17 @@ export default function NewBooking() {
   }; 
 
   const checkAvailability = async () => {
-    if (!form.roomId || !form.checkIn || !form.checkOut) return;
+    if (!form.numberOfRooms || !form.checkIn || !form.checkOut) return;
 
     try {
-      const { data } = await axios.post('/api/rooms/check-availability', {
-        roomId: form.roomId,
-        checkIn: form.checkIn,
-        checkOut: form.checkOut
+      const availableCount = rooms.filter(room => room.inventory > 0).length;
+      setAvailability({ 
+        available: parseInt(form.numberOfRooms) <= availableCount,
+        availableRooms: availableCount,
+        totalRooms: rooms.length
       });
-      setAvailability(data.data);
-      if (!data.data.available) {
-        toast.warning('Room not available for selected dates');
+      if (parseInt(form.numberOfRooms) > availableCount) {
+        toast.warning(`Only ${availableCount} rooms available for selected dates`);
       }
     } catch (error) {
       toast.error('Failed to check availability');
@@ -64,16 +63,22 @@ export default function NewBooking() {
   };
 
   useEffect(() => {
-    if (form.roomId && form.checkIn && form.checkOut) {
+    if (form.numberOfRooms && form.checkIn && form.checkOut) {
       checkAvailability();
     }
-  }, [form.roomId, form.checkIn, form.checkOut]);
+  }, [form.numberOfRooms, form.checkIn, form.checkOut]);
 
-  const selectedRoom = rooms.find(r => r._id === form.roomId);
   const nights = form.checkIn && form.checkOut 
     ? Math.ceil((new Date(form.checkOut) - new Date(form.checkIn)) / (1000 * 60 * 60 * 24))
     : 0;
-  const totalPrice = selectedRoom && nights > 0 ? selectedRoom.price * nights : 0;
+  
+  const avgRoomPrice = rooms.length > 0 
+    ? rooms.reduce((sum, room) => sum + room.price, 0) / rooms.length 
+    : 0;
+  
+  const totalPrice = form.numberOfRooms && nights > 0 
+    ? Math.round(avgRoomPrice * parseInt(form.numberOfRooms) * nights)
+    : 0;
 
   const validateDates = () => {
     const today = new Date();
@@ -102,20 +107,21 @@ export default function NewBooking() {
     }
 
     if (!availability?.available) {
-      toast.error('Room not available for selected dates');
-      return;
-    }
-
-    if (selectedRoom && parseInt(form.guests) > selectedRoom.capacity) {
-      toast.error(`This room can accommodate maximum ${selectedRoom.capacity} guests`);
+      toast.error('Not enough rooms available for selected dates');
       return;
     }
 
     setLoading(true);
     try {
+      // Book the first available room (simplified logic)
+      const availableRoom = rooms.find(r => r.inventory > 0);
+      
       const { data } = await axios.post('/api/bookings', {
-        ...form,
-        guests: parseInt(form.guests)
+        roomId: availableRoom._id,
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        guests: parseInt(form.guests),
+        specialRequests: form.specialRequests
       });
       
       setStatus('success');
@@ -162,26 +168,24 @@ export default function NewBooking() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Select Room *</label>
+                  <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Number of Rooms *</label>
                   <select
-                    name="roomId"
+                    name="numberOfRooms"
                     required
-                    value={form.roomId}
-                    onChange={(e) => setForm({ ...form, roomId: e.target.value })}
+                    value={form.numberOfRooms}
+                    onChange={(e) => setForm({ ...form, numberOfRooms: e.target.value })}
                     className="form-input-light w-full"
                   >
-                    <option value="">Choose a room</option>
-                    {rooms.map(room => (
-                      <option key={room._id} value={room._id}>
-                        {room.name} - ₹{room.price}/night (Capacity: {room.capacity} guests)
+                    <option value="">Select number of rooms</option>
+                    {[1, 2, 3, 4, 5, 6].map(n => (
+                      <option key={n} value={n}>
+                        {n} Room{n > 1 ? 's' : ''}
                       </option>
                     ))}
                   </select>
-                  {rooms.length > 0 && (
-                    <p className="text-xs text-mud font-hind mt-1">
-                      {rooms.length} room type{rooms.length > 1 ? 's' : ''} available
-                    </p>
-                  )}
+                  <p className="text-xs text-mud font-hind mt-1">
+                    {rooms.length} rooms available at the property
+                  </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -234,25 +238,15 @@ export default function NewBooking() {
                     className="form-input-light w-full"
                   >
                     <option value="">Select</option>
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option 
-                        key={n} 
-                        value={n}
-                        disabled={selectedRoom && n > selectedRoom.capacity}
-                      >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                      <option key={n} value={n}>
                         {n} Guest{n > 1 ? 's' : ''}
-                        {selectedRoom && n > selectedRoom.capacity ? ' (Exceeds capacity)' : ''}
                       </option>
                     ))}
                   </select>
-                  {selectedRoom && (
-                    <p className="text-xs text-mud font-hind mt-1">
-                      Maximum capacity: {selectedRoom.capacity} guests
-                    </p>
-                  )}
                 </div>
 
-                {form.roomId && form.checkIn && form.checkOut && (
+                {form.numberOfRooms && form.checkIn && form.checkOut && (
                   <div className="bg-blue-50 border border-blue-300 p-4 rounded-sm">
                     <p className="text-sm font-hind text-blue-800 mb-2">
                       🔍 Checking availability...
@@ -261,8 +255,8 @@ export default function NewBooking() {
                       <div className={`p-3 rounded-sm mt-2 ${availability.available ? 'bg-green-50 border border-green-300' : 'bg-red-50 border border-red-300'}`}>
                         <p className={`text-sm font-hind font-semibold ${availability.available ? 'text-green-800' : 'text-red-800'}`}>
                           {availability.available 
-                            ? `✓ Available! (${availability.availableCount} of ${availability.totalInventory} rooms available)`
-                            : `✕ Not available for selected dates (${availability.totalInventory} total rooms, all booked)`}
+                            ? `✓ Available! (${availability.availableRooms} of ${availability.totalRooms} rooms available)`
+                            : `✕ Not enough rooms available (Only ${availability.availableRooms} available, you requested ${form.numberOfRooms})`}
                         </p>
                       </div>
                     )}
@@ -283,47 +277,40 @@ export default function NewBooking() {
 
                 <button
                   type="submit"
-                  disabled={loading || !availability?.available || !form.roomId || !form.checkIn || !form.checkOut || !form.guests}
+                  disabled={loading || !availability?.available || !form.numberOfRooms || !form.checkIn || !form.checkOut || !form.guests}
                   className="w-full bg-saffron text-white text-sm font-hind tracking-widest uppercase py-3.5 rounded-sm hover:bg-saf-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Creating Booking...' : 
-                   !form.roomId || !form.checkIn || !form.checkOut || !form.guests ? 'Fill all required fields' :
+                   !form.numberOfRooms || !form.checkIn || !form.checkOut || !form.guests ? 'Fill all required fields' :
                    !availability ? 'Checking availability...' :
-                   !availability.available ? 'Room not available' :
-                   `Confirm Booking - ₹${totalPrice}`}
+                   !availability.available ? 'Not enough rooms available' :
+                   `Confirm Booking - ₹${totalPrice.toLocaleString()}`}
                 </button>
               </form>
             )}
           </div>
 
           <div className="space-y-5">
-            {selectedRoom && (
+            {form.numberOfRooms && nights > 0 && (
               <div className="bg-white p-5 rounded-sm border border-warm shadow-sm">
-                <img src={selectedRoom.image} alt={selectedRoom.name} className="w-full h-32 object-cover rounded-sm mb-3" />
-                <h3 className="font-serif text-lg font-semibold mb-2">{selectedRoom.name}</h3>
-                <p className="text-mud text-xs font-hind mb-3">{selectedRoom.description}</p>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {selectedRoom.amenities?.slice(0, 4).map(a => (
-                    <span key={a} className="amenity-tag text-xs">{a}</span>
-                  ))}
-                </div>
-                <div className="border-t border-parchment pt-3">
-                  <div className="flex justify-between text-sm font-hind mb-1">
-                    <span className="text-mud">Price per night:</span>
-                    <span className="font-semibold">₹{selectedRoom.price}</span>
+                <h3 className="font-serif text-lg font-semibold mb-3">Booking Summary</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm font-hind">
+                    <span className="text-mud">Rooms:</span>
+                    <span className="font-semibold">{form.numberOfRooms}</span>
                   </div>
-                  {nights > 0 && (
-                    <>
-                      <div className="flex justify-between text-sm font-hind mb-1">
-                        <span className="text-mud">Nights:</span>
-                        <span className="font-semibold">{nights}</span>
-                      </div>
-                      <div className="flex justify-between text-lg font-serif border-t border-parchment pt-2 mt-2">
-                        <span>Total:</span>
-                        <span className="text-saffron font-bold">₹{totalPrice}</span>
-                      </div>
-                    </>
-                  )}
+                  <div className="flex justify-between text-sm font-hind">
+                    <span className="text-mud">Nights:</span>
+                    <span className="font-semibold">{nights}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-hind">
+                    <span className="text-mud">Avg. price/room/night:</span>
+                    <span className="font-semibold">₹{Math.round(avgRoomPrice).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-serif border-t border-parchment pt-2 mt-2">
+                    <span>Total:</span>
+                    <span className="text-saffron font-bold">₹{totalPrice.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
             )}

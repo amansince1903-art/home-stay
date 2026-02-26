@@ -1,7 +1,44 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import GuestSelector from '../components/GuestSelector'
+import RoomSelector from '../components/RoomSelector'
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react'
+// Import Swiper modules
+import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+// Import Swiper styles
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+
 import useReveal from '../components/useReveal'
 import DateRangePicker from '../components/DateRangePicker'
+
+// Import local gallery images
+import galleryImage from '../assets/images/gallery image.jpg'
+import gallery2 from '../assets/images/gallery 2.jpg'
+import haveliOutdoor from '../assets/images/haveli outdoor.jpg'
+import outdoor1 from '../assets/images/outdoor  1.jpg'
+import outdoor2 from '../assets/images/outdoor 2.jpg'
+
+// Import local room images
+import room1 from '../assets/images/room 1.jpg'
+import room2 from '../assets/images/room 2.png'
+import room3 from '../assets/images/room 3.jpg'
+import room4 from '../assets/images/room 4.png'
+import room5 from '../assets/images/room 5.png'
+import room6 from '../assets/images/-room 6.jpg'
+
+// Map room images by bedroom number
+const roomImages = {
+  'Bedroom 1': room1,
+  'Bedroom 2': room2,
+  'Bedroom 3': room3,
+  'Bedroom 4': room4,
+  'Bedroom 5': room5,
+  'Bedroom 6': room6
+}
 
 /* ── Data ── */
 const destinations = [
@@ -9,12 +46,6 @@ const destinations = [
   { name: 'Varanasi',   sub: 'Ghats · Spiritual Capital',    img: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=500&q=80' },
   { name: 'Lucknow',    sub: 'Nawabi · Awadhi Cuisine',      img: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=80' },
   { name: 'Prayagraj',  sub: 'Sangam · Kumbh Mela',         img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80' },
-]
-
-const rooms = [
-  { id: 1, name: 'Royal Haveli Suite',  price: '₹2,500', badge: 'Most Popular', badgeColor: 'bg-saffron',   status: 'Available', statusColor: 'bg-forest', img: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80', desc: 'Grand suite with Mughal arches, hand-painted walls & private courtyard view.', amenities: ['King Bed', 'AC', 'Courtyard View', 'Breakfast'] },
-  { id: 2, name: 'Gangamahal Room',     price: '₹1,800', badge: null,           badgeColor: '',             status: 'Available', statusColor: 'bg-forest', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80', desc: 'Wooden balcony with sacred Ganga views, antique furniture & serene ambience.', amenities: ['Double Bed', 'AC', 'Ganga View', 'Breakfast'] },
-  { id: 3, name: 'Family Kothi',        price: '₹4,200', badge: null,           badgeColor: '',             status: '1 Left',    statusColor: 'bg-maroon', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80', desc: '3-bedroom kothi with private kitchen, sit-out garden & authentic home cooking.', amenities: ['3 Bedrooms', 'Kitchen', 'Garden', 'All Meals'] },
 ]
 
 const reviews = [
@@ -61,6 +92,34 @@ export default function Home() {
   const statsRef   = useReveal()
 
   const [quickBooking, setQuickBooking] = useState({ checkin: '', checkout: '' })
+  const [rooms, setRooms] = useState([])
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/rooms')
+        const roomsData = response.data.data.map(room => ({
+          id: room._id,
+          name: room.name,
+          price: `₹${room.price.toLocaleString()}`,
+          badge: room.name === 'Bedroom 1' ? 'Most Popular' : null,
+          badgeColor: room.name === 'Bedroom 1' ? 'bg-saffron' : '',
+          status: room.inventory > 1 ? 'Available' : `${room.inventory} Left`,
+          statusColor: room.inventory > 1 ? 'bg-forest' : 'bg-maroon',
+          img: roomImages[room.name] || room.image, // Use local image if available
+          desc: room.description,
+          amenities: room.amenities.slice(0, 4)
+        }))
+        setRooms(roomsData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching rooms:', error)
+        setLoading(false)
+      }
+    }
+    fetchRooms()
+  }, [])
   
   const handleDateChange = (dates) => {
     setQuickBooking({ checkin: dates.checkIn, checkout: dates.checkOut });
@@ -115,24 +174,13 @@ export default function Home() {
 
       {/* ── QUICK BOOKING BAR ── */}
       <div className="bg-maroon py-5 px-6 md:px-14">
-        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={e => { e.preventDefault(); window.location.href = '/rooms' }}>
+        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={e => { e.preventDefault(); window.location.href = '/booking' }}>
           <DateRangePicker onDateChange={handleDateChange} />
           
-          <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
-            <label className="text-turmeric text-[0.6rem] tracking-widest uppercase font-hind">Guests</label>
-            <select className="bg-white/10 border border-white/20 text-white px-3 py-2.5 text-sm rounded-sm outline-none font-hind">
-              {['1 Guest', '2 Guests', '3 Guests', '4+ Guests'].map(g => <option key={g} className="bg-maroon">{g}</option>)}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-            <label className="text-turmeric text-[0.6rem] tracking-widest uppercase font-hind">Room Type</label>
-            <select className="bg-white/10 border border-white/20 text-white px-3 py-2.5 text-sm rounded-sm outline-none font-hind">
-              <option className="bg-maroon">Any Room</option>
-              <option className="bg-maroon">Royal Haveli Suite</option>
-              <option className="bg-maroon">Gangamahal Room</option>
-              <option className="bg-maroon">Family Kothi</option>
-            </select>
-          </div>
+          <GuestSelector onChange={(g) => console.log('Guests:', g)} />
+
+          <RoomSelector onChange={(r) => console.log('Rooms:', r)} />
+
           <button 
             type="submit" 
             disabled={!quickBooking.checkin || !quickBooking.checkout}
@@ -197,30 +245,61 @@ export default function Home() {
           <div className="text-saffron text-lg tracking-[0.6rem] opacity-50 my-2">✦ ✦ ✦</div>
           <h2 className="font-serif text-4xl md:text-5xl font-normal">Our <em className="italic text-saffron">Rooms & Suites</em></h2>
         </div>
-        <div ref={roomsRef} className="reveal grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {rooms.map(r => (
-            <div key={r.id} className="bg-white rounded-sm overflow-hidden shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 border border-parchment">
-              <div className="relative h-52 overflow-hidden">
-                <img src={r.img} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                {r.badge && <span className={`absolute top-3 left-3 ${r.badgeColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.badge}</span>}
-                <span className={`absolute top-3 right-3 ${r.statusColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.status}</span>
-              </div>
-              <div className="p-5">
-                <h3 className="font-serif text-xl font-semibold">{r.name}</h3>
-                <p className="text-mud text-xs leading-relaxed mt-1 mb-3 font-hind">{r.desc}</p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {r.amenities.map(a => <span key={a} className="amenity-tag">{a}</span>)}
-                </div>
-                <div className="flex items-center justify-between border-t border-parchment pt-4">
-                  <div>
-                    <span className="font-serif text-2xl font-semibold text-saffron">{r.price}</span>
-                    <span className="text-xs text-mud font-hind"> / night</span>
-                  </div>
-                  <Link to="/booking" className="bg-saffron text-white text-xs font-hind tracking-wider uppercase px-4 py-2 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book</Link>
-                </div>
-              </div>
+        <div ref={roomsRef} className="reveal max-w-6xl mx-auto">
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-mud font-hind">Loading rooms...</p>
             </div>
-          ))}
+          ) : rooms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-mud font-hind">No rooms available</p>
+            </div>
+          ) : (
+            <Swiper
+              key="rooms-swiper"
+              modules={[Navigation, Pagination, Autoplay]}
+              spaceBetween={24}
+              slidesPerView={1}
+              navigation
+              pagination={{ clickable: true }}
+              autoplay={{ 
+                delay: 4000, 
+                disableOnInteraction: false
+              }}
+              breakpoints={{
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 }
+              }}
+              className="rooms-swiper"
+            >
+            {rooms.map(r => (
+              <SwiperSlide key={r.id}>
+                <div className="bg-white rounded-sm overflow-hidden shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 border border-parchment h-full">
+                  <div className="relative h-52 overflow-hidden">
+                    <img src={r.img} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                    {r.badge && <span className={`absolute top-3 left-3 ${r.badgeColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.badge}</span>}
+                    <span className={`absolute top-3 right-3 ${r.statusColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.status}</span>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-serif text-xl font-semibold">{r.name}</h3>
+                    <p className="text-mud text-xs leading-relaxed mt-1 mb-3 font-hind">{r.desc}</p>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {r.amenities.map(a => <span key={a} className="amenity-tag">{a}</span>)}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-parchment pt-4">
+                      <div>
+                        <span className="font-serif text-2xl font-semibold text-saffron">{r.price}</span>
+                        <span className="text-xs text-mud font-hind"> / night</span>
+                      </div>
+                      <Link to="/booking" className="bg-saffron text-white text-xs font-hind tracking-wider uppercase px-4 py-2 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book</Link>
+                    </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          )}
         </div>
         <div className="text-center mt-8">
           <Link to="/rooms" className="inline-block border border-saffron text-saffron text-sm font-hind tracking-widest uppercase px-10 py-3 rounded-sm hover:bg-saffron hover:text-white transition-all no-underline">View All Rooms</Link>
@@ -236,11 +315,11 @@ export default function Home() {
         </div>
         <div ref={galleryRef} className="gallery-grid reveal max-w-5xl mx-auto">
           {[
-            { src: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80', large: true, alt: 'Taj Mahal' },
-            { src: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=600&q=80', alt: 'Varanasi' },
-            { src: 'https://images.unsplash.com/photo-1583340806474-a2fab0a46f9e?w=600&q=80', alt: 'Haveli' },
-            { src: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&q=80', alt: 'Lucknow' },
-            { src: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80', alt: 'Room' },
+            { src: galleryImage, large: true, alt: 'Haveli Gallery' },
+            { src: gallery2, alt: 'Gallery View' },
+            { src: haveliOutdoor, alt: 'Haveli Outdoor' },
+            { src: outdoor1, alt: 'Outdoor Area 1' },
+            { src: outdoor2, alt: 'Outdoor Area 2' },
           ].map((img, i) => (
             <div key={i} className={`gallery-item${img.large ? ' gallery-item--large' : ''}`}>
               <img src={img.src} alt={img.alt} />
@@ -299,8 +378,8 @@ export default function Home() {
             <p className="text-white/60 text-sm font-hind mt-2">We'll confirm availability and reply within 24 hours.</p>
           </div>
           <div className="text-center">
-            <Link to="/booking" className="inline-block bg-saffron text-white text-sm font-hind tracking-widest uppercase px-12 py-4 rounded-sm hover:bg-saf-dark transition-all no-underline" style={{ boxShadow: '0 4px 20px rgba(232,114,28,0.5)' }}>
-              Go to Booking Page →
+            <Link to="/contact" className="inline-block bg-saffron text-white text-sm font-hind tracking-widest uppercase px-12 py-4 rounded-sm hover:bg-saf-dark transition-all no-underline" style={{ boxShadow: '0 4px 20px rgba(232,114,28,0.5)' }}>
+              Contact Us →
             </Link>
           </div>
         </div>

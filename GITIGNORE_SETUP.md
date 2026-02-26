@@ -5,7 +5,7 @@
 ### 1. Root .gitignore (NEW)
 **Location:** `.gitignore` (project root)
 
-**Purpose:** Ignores files for the entire project
+**Purpose:** Ignores files for the entire project                     
 
 **Includes:**
 - node_modules/
@@ -38,34 +38,34 @@ node_modules
 ### 3. Client .gitignore (ALREADY EXISTS)
 **Location:** `client/.gitignore`
 
-**Status:** Already comprehensive, no changes needed
+**Status:** Already comprehensive, no changes needed                       
 
 ---
 
 ## What Gets Ignored
 
 ### ✅ Always Ignored:
-- `node_modules/` - Dependencies (both client & server)
-- `.env` - Environment variables with secrets
+- `node_modules/` - Dependencies (both client & server)                                              
+- `.env` - Environment variables with secrets                                             
 - `*.log` - Log files
 - `dist/`, `build/` - Production builds
-- `.DS_Store` - Mac OS files
+- `.DS_Store` - Mac OS files                                             
 - `.vscode/`, `.idea/` - Editor settings
 - `coverage/` - Test coverage reports
 
-### ⚠️ NOT Ignored (Tracked by Git):
+### ⚠️ NOT Ignored (Tracked by Git):                                   
 - `package.json` - Dependency list
-- `package-lock.json` - Lock file (optional to ignore)
-- Source code files (`.js`, `.jsx`, `.css`)
+- `package-lock.json` - Lock file (optional to ignore)                  
+- Source code files (`.js`, `.jsx`, `.css`)                           
 - Configuration files
-- Documentation (`.md` files)
+- Documentation (`.md` files)                                       
 
 ---
 
 ## Why This Matters
 
 ### Security:
-- `.env` files contain sensitive data (passwords, API keys)
+- `.env` files contain sensitive data (passwords, API keys)                 
 - Never commit secrets to Git!
 
 ### Performance:

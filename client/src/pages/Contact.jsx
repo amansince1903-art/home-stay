@@ -33,7 +33,7 @@ export default function Contact() {
             <div className="space-y-5">
               {[
                 { icon: '📍', label: 'Address',           value: 'Haveli Stay, 14 Nawabi Lane, Hazratganj, Lucknow, UP 226001' },
-                { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 98765 43210',   href: 'tel:+919876543210' },
+                { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 91295 86522',   href: 'tel:+919129586522' },
                 { icon: '✉️', label: 'Email',             value: 'info@havelistay.in', href: 'mailto:info@havelistay.in' },
                 { icon: '🕐', label: 'Reception Hours',   value: '7:00 AM – 10:00 PM IST, Daily' },
               ].map(item => (
@@ -74,7 +74,7 @@ export default function Contact() {
                 {[
                   { label: 'Full Name *',  name: 'name',  type: 'text',  placeholder: 'Aapka naam',       required: true },
                   { label: 'Email *',      name: 'email', type: 'email', placeholder: 'email@example.com', required: true },
-                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '+91 98765 43210',   required: false },
+                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '+91 91295 86522',   required: false },
                 ].map(f => (
                   <div key={f.name} className="flex flex-col gap-1">
                     <label className="text-mud text-[0.6rem] tracking-widest uppercase font-hind">{f.label}</label>

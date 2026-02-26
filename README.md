@@ -5,16 +5,16 @@ A full-stack hotel booking system built with React, Node.js, Express, and MongoD
 ## 🏨 Features
 
 ### Phase 1 (Completed)
-- ✅ User Authentication (JWT-based)
-- ✅ Role-based Access Control (Guest/Admin)
-- ✅ Real Booking System with Availability Checking
-- ✅ Room Inventory Management
-- ✅ Booking Status Tracking
+- ✅ User Authentication (JWT-based)                         
+- ✅ Role-based Access Control (Guest/Admin)                   
+- ✅ Real Booking System with Availability Checking           
+- ✅ Room Inventory Management                                
+- ✅ Booking Status Tracking                              
 - ✅ Admin Dashboard
 - ✅ User Dashboard
-- ✅ Email Notifications (configured)
-- ✅ Date Range Picker Calendar
-- ✅ Complete Validation System
+- ✅ Email Notifications (configured)                             
+- ✅ Date Range Picker Calendar                             
+- ✅ Complete Validation System                               
 
 ### Frontend
 - React 18 with Vite
