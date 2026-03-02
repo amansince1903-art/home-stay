@@ -29,10 +29,10 @@ export default function Navbar() {
 
       <div className="flex items-center justify-between px-6 md:px-14 py-3">
         <Link to="/" className="flex items-center gap-2 no-underline">
-          <span className="text-saffron text-2xl">🏛</span>
+          <span className="text-saffron text-2xl">🏡</span>
           <div>
-            <div className="font-serif text-xl text-white leading-none">Haveli Stay</div>
-            <div className="text-[0.55rem] tracking-[0.2em] text-turmeric uppercase font-hind">Uttar Pradesh Heritage</div>
+            <div className="font-serif text-xl text-white leading-none">DAISY DALE</div>
+            <div className="text-[0.55rem] tracking-[0.2em] text-turmeric uppercase font-hind">Dehradun · Mountain Homestay</div>
           </div>
         </Link>
 

@@ -17,23 +17,30 @@ import room6 from '../assets/images/-room 6.jpg'
 import dinning2 from '../assets/images/dinning 2.jpg'
 import dinning3 from '../assets/images/dinning 3.jpg'
 import dinningArea from '../assets/images/dinning area.jpg'
+// New DAISY DALE images
+import d2 from '../assets/images/d2.jpeg'
+import d3 from '../assets/images/d3.png'
+import daisyStay3 from '../assets/images/daisy stay 3.jpg'
 
 const images = [
-  { src: galleryImage, thumb: galleryImage, alt: 'Haveli Gallery View', large: true },
-  { src: haveliOutdoor, thumb: haveliOutdoor, alt: 'Haveli Outdoor' },
-  { src: room1, thumb: room1, alt: 'Heritage Room 1' },
-  { src: outdoor1, thumb: outdoor1, alt: 'Outdoor Area 1' },
-  { src: room2, thumb: room2, alt: 'Heritage Room 2' },
+  { src: daisyStay3, thumb: daisyStay3, alt: 'DAISY DALE Exterior', large: true },
+  { src: d2, thumb: d2, alt: 'DAISY DALE View' },
+  { src: d3, thumb: d3, alt: 'DAISY DALE Garden' },
+  { src: galleryImage, thumb: galleryImage, alt: 'Mountain View' },
+  { src: haveliOutdoor, thumb: haveliOutdoor, alt: 'Outdoor Area' },
+  { src: room1, thumb: room1, alt: 'Bedroom 1' },
+  { src: outdoor1, thumb: outdoor1, alt: 'Garden Area 1' },
+  { src: room2, thumb: room2, alt: 'Bedroom 2' },
   { src: dinningArea, thumb: dinningArea, alt: 'Dining Area' },
-  { src: outdoor2, thumb: outdoor2, alt: 'Outdoor Area 2' },
-  { src: room3, thumb: room3, alt: 'Heritage Room 3' },
-  { src: gallery2, thumb: gallery2, alt: 'Gallery View 2' },
-  { src: room4, thumb: room4, alt: 'Heritage Room 4' },
-  { src: dinning2, thumb: dinning2, alt: 'Dining Area 2' },
-  { src: outdoor3, thumb: outdoor3, alt: 'Outdoor Area 3' },
-  { src: room5, thumb: room5, alt: 'Heritage Room 5' },
-  { src: dinning3, thumb: dinning3, alt: 'Dining Area 3' },
-  { src: room6, thumb: room6, alt: 'Heritage Room 6' },
+  { src: outdoor2, thumb: outdoor2, alt: 'Garden Area 2' },
+  { src: room3, thumb: room3, alt: 'Bedroom 3' },
+  { src: gallery2, thumb: gallery2, alt: 'Gallery View' },
+  { src: room4, thumb: room4, alt: 'Bedroom 4' },
+  { src: dinning2, thumb: dinning2, alt: 'Dining Space' },
+  { src: outdoor3, thumb: outdoor3, alt: 'Garden Area 3' },
+  { src: room5, thumb: room5, alt: 'Bedroom 5' },
+  { src: dinning3, thumb: dinning3, alt: 'Dining Hall' },
+  { src: room6, thumb: room6, alt: 'Bedroom 6' },
 ]
 
 export default function Gallery() {
@@ -43,8 +50,8 @@ export default function Gallery() {
     <>
       <PageHeader
         label="Photo Gallery"
-        title='Life at <em class="italic" style="color:#F2A830;">Haveli Stay</em>'
-        subtitle="Glimpses of heritage architecture, vibrant UP culture, and the warmth of our home."
+        title='Life at <em class="italic" style="color:#F2A830;">DAISY DALE</em>'
+        subtitle="Glimpses of mountain serenity, warm hospitality, and the peaceful beauty of our Dehradun home."
       />
 
       {/* Lightbox */}

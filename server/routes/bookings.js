@@ -6,9 +6,19 @@ import { sendBookingConfirmation } from '../utils/email.js';
 
 const router = express.Router();
 
-router.post('/', protect, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { roomId, checkIn, checkOut, guests, specialRequests } = req.body;
+    const { roomId, checkIn, checkOut, guests, numberOfRooms = 1, specialRequests, guestName, guestEmail, guestPhone } = req.body;
+
+    // Check if it's a guest booking or authenticated user
+    const isGuestBooking = !req.user;
+    
+    // Validate guest information if not logged in
+    if (isGuestBooking) {
+      if (!guestName || !guestEmail || !guestPhone) {
+        return res.status(400).json({ success: false, message: 'Guest name, email, and phone are required' });
+      }
+    }
 
     // Validate dates
     const today = new Date();
@@ -30,11 +40,12 @@ router.post('/', protect, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Room not found' });
     }
 
-    // Validate guest capacity
-    if (guests > room.capacity) {
+    // Validate guest capacity — adults only, multiplied by number of rooms
+    const maxGuests = room.capacity * numberOfRooms;
+    if (guests > maxGuests) {
       return res.status(400).json({ 
         success: false, 
-        message: `This room can accommodate maximum ${room.capacity} guests. You selected ${guests} guests.` 
+        message: `${numberOfRooms} room(s) can accommodate maximum ${maxGuests} adults. You selected ${guests}.` 
       });
     }
 
@@ -60,23 +71,38 @@ router.post('/', protect, async (req, res) => {
     if (nights < 1) {
       return res.status(400).json({ success: false, message: 'Booking must be at least 1 night' });
     }
-    const totalPrice = room.price * nights;
+    const totalPrice = room.price * nights * numberOfRooms;
 
     // Create booking
-    const booking = await Booking.create({
-      user: req.user._id,
+    const bookingData = {
       room: roomId,
+      numberOfRooms: numberOfRooms || 1,
       checkIn: checkInDate,
       checkOut: checkOutDate,
       guests,
       totalPrice,
       specialRequests
-    });
+    };
 
+    // Add user or guest information
+    if (isGuestBooking) {
+      bookingData.isGuestBooking = true;
+      bookingData.guestName = guestName;
+      bookingData.guestEmail = guestEmail;
+      bookingData.guestPhone = guestPhone;
+    } else {
+      bookingData.user = req.user._id;
+      bookingData.isGuestBooking = false;
+    }
+
+    const booking = await Booking.create(bookingData);
+
+    // Populate booking details for email
     const populatedBooking = await Booking.findById(booking._id)
       .populate('user', 'name email phone')
       .populate('room', 'name price');
 
+    // Send confirmation email
     await sendBookingConfirmation(populatedBooking);
 
     res.status(201).json({ success: true, data: populatedBooking });
@@ -135,10 +161,17 @@ router.put('/:id/status', protect, admin, async (req, res) => {
       req.params.id,
       { status },
       { new: true }
-    ).populate('user', 'name email').populate('room', 'name');
+    )
+    .populate('user', 'name email')
+    .populate('room', 'name');
 
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Send email notification when status changes to confirmed
+    if (status === 'confirmed') {
+      await sendBookingConfirmation(booking);
     }
 
     res.json({ success: true, data: booking });

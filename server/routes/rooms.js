@@ -14,6 +14,36 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ✅ NEW — Real availability check by date range
+router.get('/availability', async (req, res) => {
+  try {
+    const { checkIn, checkOut, numberOfRooms } = req.query
+    const checkInDate = new Date(checkIn)
+    const checkOutDate = new Date(checkOut)
+
+    const allRooms = await Room.find({ status: 'active' })
+
+    let availableCount = 0
+    for (const room of allRooms) {
+      const overlapping = await Booking.countDocuments({
+        room: room._id,
+        status: { $in: ['pending', 'confirmed', 'checked-in'] },
+        checkIn: { $lt: checkOutDate },
+        checkOut: { $gt: checkInDate }
+      })
+      if (overlapping < room.inventory) availableCount++
+    }
+
+    res.json({
+      available: availableCount >= parseInt(numberOfRooms),
+      availableRooms: availableCount,
+      totalRooms: allRooms.length
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
@@ -30,7 +60,6 @@ router.post('/check-availability', async (req, res) => {
   try {
     const { roomId, checkIn, checkOut } = req.body;
 
-    // Validate dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const checkInDate = new Date(checkIn);
@@ -44,13 +73,11 @@ router.post('/check-availability', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Check-out date must be after check-in date' });
     }
 
-    // Validate room
     const room = await Room.findById(roomId);
     if (!room) {
       return res.status(404).json({ success: false, message: 'Room not found' });
     }
 
-    // Count overlapping bookings
     const overlappingBookings = await Booking.countDocuments({
       room: roomId,
       status: { $in: ['pending', 'confirmed', 'checked-in'] },

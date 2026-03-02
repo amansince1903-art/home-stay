@@ -1,8 +1,15 @@
 import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Optional for guest bookings
+  // Guest information (for non-registered users)
+  guestName: { type: String },
+  guestEmail: { type: String },
+  guestPhone: { type: String },
+  isGuestBooking: { type: Boolean, default: false },
+  
   room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
+  numberOfRooms: { type: Number, default: 1 }, // Number of rooms booked
   checkIn: { type: Date, required: true },
   checkOut: { type: Date, required: true },
   guests: { type: Number, required: true },

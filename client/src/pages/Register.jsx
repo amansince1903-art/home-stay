@@ -28,7 +28,7 @@ export default function Register() {
       <div className="max-w-md w-full bg-white p-8 rounded-sm shadow-lg border border-parchment">
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl text-ink mb-2">Create Account</h1>
-          <p className="text-mud text-sm font-hind">Join Haveli Stay family</p>
+          <p className="text-mud text-sm font-hind">Join DAISY DALE family</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -40,10 +40,10 @@ export default function Contact() {
             <h2 className="font-serif text-2xl font-normal mb-7">Contact Information</h2>
             <div className="space-y-5">
               {[
-                { icon: '📍', label: 'Address',           value: 'Haveli Stay, 14 Nawabi Lane, Hazratganj, Lucknow, UP 226001' },
+                { icon: '📍', label: 'Address',           value: 'DAISY DALE, Dehradun Foothills, Uttarakhand, India' },
                 { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 91295 86522',   href: 'tel:+919129586522' },
-                { icon: '✉️', label: 'Email',             value: 'info@havelistay.in', href: 'mailto:info@havelistay.in' },
-                { icon: '🕐', label: 'Reception Hours',   value: '7:00 AM – 10:00 PM IST, Daily' },
+                { icon: '✉️', label: 'Email',             value: 'info@daisydale.in', href: 'mailto:info@daisydale.in' },
+                { icon: '🕐', label: 'Reception Hours',   value: '24/7 Support Available' },
               ].map(item => (
                 <div key={item.label} className="flex gap-4 items-start">
                   <div className="w-11 h-11 bg-saffron rounded-full grid place-items-center text-white text-lg shrink-0">{item.icon}</div>
@@ -62,8 +62,8 @@ export default function Contact() {
             <div className="mt-8 bg-parchment rounded-sm overflow-hidden border border-warm h-52 flex items-center justify-center">
               <div className="text-center text-mud font-hind">
                 <div className="text-3xl mb-2">🗺</div>
-                <div className="text-sm">Lucknow, Uttar Pradesh</div>
-                <a href="https://maps.google.com/?q=Hazratganj+Lucknow" target="_blank" rel="noreferrer" className="text-saffron text-xs no-underline hover:underline mt-1 block">Open in Google Maps →</a>
+                <div className="text-sm">Dehradun, Uttarakhand</div>
+                <a href="https://maps.google.com/?q=Dehradun+Uttarakhand" target="_blank" rel="noreferrer" className="text-saffron text-xs no-underline hover:underline mt-1 block">Open in Google Maps →</a>
               </div>
             </div>
           </div>

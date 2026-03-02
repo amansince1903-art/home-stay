@@ -8,14 +8,14 @@ export default function Footer() {
         {/* Brand */}
         <div className="md:col-span-1">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-saffron text-2xl">🏛</span>
+            <span className="text-saffron text-2xl">🏡</span>
             <div>
-              <div className="font-serif text-xl text-white leading-none">Haveli Stay</div>
-              <div className="text-[0.55rem] tracking-[0.2em] text-turmeric uppercase font-hind">Uttar Pradesh</div>
+              <div className="font-serif text-xl text-white leading-none">DAISY DALE</div>
+              <div className="text-[0.55rem] tracking-[0.2em] text-turmeric uppercase font-hind">Dehradun</div>
             </div>
           </div>
           <p className="text-white/50 text-xs leading-relaxed font-hind">
-            Experience authentic UP heritage, culture and warm Indian hospitality in our century-old haveli.
+            A boutique mountain homestay where Army legacy meets warm hospitality in the peaceful foothills of Dehradun.
           </p>
         </div>
 
@@ -33,11 +33,11 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Destinations */}
+        {/* Nearby */}
         <div>
-          <div className="text-white text-xs tracking-widest uppercase font-hind mb-4">We Cover</div>
+          <div className="text-white text-xs tracking-widest uppercase font-hind mb-4">Nearby</div>
           <ul className="space-y-2 list-none">
-            {['🕌 Lucknow', '🕍 Agra', '🛕 Varanasi', '🌊 Prayagraj', '🏯 Ayodhya'].map(d => (
+            {['🏔 Mussoorie', '🌲 Rajaji National Park', '🛕 Tapkeshwar Temple', '🏞 Robber\'s Cave', '🌄 Sahastradhara'].map(d => (
               <li key={d}><span className="text-white/50 text-xs font-hind">{d}</span></li>
             ))}
           </ul>
@@ -47,16 +47,16 @@ export default function Footer() {
         <div>
           <div className="text-white text-xs tracking-widest uppercase font-hind mb-4">Contact</div>
           <ul className="space-y-3 list-none">
-            <li className="text-white/50 text-xs font-hind">📍 Hazratganj, Lucknow, UP 226001</li>
-            <li><a href="tel:+919876543210" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">📞 +91 98765 43210</a></li>
-            <li><a href="mailto:info@havelistay.in" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">✉ info@havelistay.in</a></li>
-            <li className="text-white/50 text-xs font-hind">🕐 Open Daily · 7AM – 10PM</li>
+            <li className="text-white/50 text-xs font-hind">📍 Dehradun Foothills, Uttarakhand</li>
+            <li><a href="tel:+919129586522" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">📞 +91 91295 86522</a></li>
+            <li><a href="mailto:info@daisydale.in" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">✉ info@daisydale.in</a></li>
+            <li className="text-white/50 text-xs font-hind">🕐 Open Daily · 24/7 Support</li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-white/10 px-6 md:px-14 py-4 flex flex-wrap justify-between items-center gap-3">
-        <p className="text-xs font-hind">© 2024 Haveli Stay · Uttar Pradesh · All Rights Reserved</p>
+        <p className="text-xs font-hind">© 2024 DAISY DALE · Dehradun · All Rights Reserved</p>
         <p className="text-xs font-hind text-white/30">Built with React + Vite + Tailwind CSS</p>
       </div>
     </footer>

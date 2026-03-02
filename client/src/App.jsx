@@ -30,11 +30,7 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login"   element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/booking" element={
-            <ProtectedRoute>
-              <NewBooking />
-            </ProtectedRoute>
-          } />
+          <Route path="/booking" element={<NewBooking />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

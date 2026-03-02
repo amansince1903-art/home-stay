@@ -29,6 +29,9 @@ import room3 from '../assets/images/room 3.jpg'
 import room4 from '../assets/images/room 4.png'
 import room5 from '../assets/images/room 5.png'
 import room6 from '../assets/images/-room 6.jpg'
+import room7 from '../assets/images/d2.jpeg'
+import room8 from '../assets/images/d3.png'
+import room9 from '../assets/images/daisy stay 3.jpg'
 
 // Map room images by bedroom number
 const roomImages = {
@@ -49,12 +52,12 @@ const destinations = [
 ]
 
 const reviews = [
-  { name: 'Ananya Sharma',       loc: 'Delhi · 5 nights',       avatar: 'https://i.pravatar.cc/60?img=22', text: 'Staying at Haveli Stay was the highlight of our India trip. The architecture, the food, the family — everything felt like stepping back into royal UP!' },
-  { name: 'Rajesh & Priya Mehta', loc: 'Mumbai · 7 nights',     avatar: 'https://i.pravatar.cc/60?img=55', text: 'The Awadhi biryani alone is worth the trip! The hosts arranged a private boat ride at Varanasi ghats at dawn — utterly magical.' },
-  { name: 'Marco Bianchi',        loc: 'Milan, Italy · 4 nights', avatar: 'https://i.pravatar.cc/60?img=38', text: 'As a foreign traveller, I was nervous — but the family made me feel completely at home. The guided heritage walks were extraordinary!' },
+  { name: 'Priya Malhotra',       loc: 'Delhi · 4 nights',       avatar: 'https://i.pravatar.cc/60?img=22', text: 'DAISY DALE is a hidden gem in Dehradun. The mountain views, the warmth of the family, and the homemade meals made us feel truly at home. A perfect escape from city life!' },
+  { name: 'Arjun & Meera Kapoor', loc: 'Mumbai · 6 nights',     avatar: 'https://i.pravatar.cc/60?img=55', text: 'The peaceful mornings with sunrise views and evening tea in the garden were magical. The hosts shared beautiful stories of their Army legacy. Highly recommend!' },
+  { name: 'David Thompson',        loc: 'London, UK · 5 nights', avatar: 'https://i.pravatar.cc/60?img=38', text: 'As a solo traveler, I felt completely safe and welcomed. The personal attention, local recommendations, and authentic hospitality made my Dehradun trip unforgettable!' },
 ]
 
-const features = ['Authentic Awadhi Cuisine', 'Heritage Architecture', 'Local Sightseeing Tours', 'Airport / Station Pickup', 'Cultural Performances', 'Free WiFi']
+const features = ['Homemade Mountain Cuisine', 'Nature & Garden Seating', 'Sunrise Mountain Views', 'Airport / Station Pickup', 'Local Area Guidance', 'Free WiFi']
 
 /* ── Counter component ── */
 function Counter({ target, suffix = '' }) {
@@ -83,6 +86,8 @@ function Counter({ target, suffix = '' }) {
 }
 
 export default function Home() {
+  const heroImages = [room7, room8, room9]
+const [currentImg, setCurrentImg] = useState(0)
   const destRef    = useReveal()
   const aboutImgR  = useReveal()
   const aboutTxtR  = useReveal()
@@ -94,6 +99,14 @@ export default function Home() {
   const [quickBooking, setQuickBooking] = useState({ checkin: '', checkout: '' })
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+  const timer = setInterval(() => {
+    setCurrentImg(i => (i + 1) % heroImages.length)
+  }, 4000)
+  return () => clearInterval(timer)
+}, [])
+
   
   useEffect(() => {
     const fetchRooms = async () => {
@@ -129,7 +142,19 @@ export default function Home() {
     <>
       {/* ── HERO ── */}
       <section className="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden" style={{ backgroundColor: '#120a06' }}>
-        <div className="hero-bg absolute inset-0" />
+        {/* <div className="hero-bg absolute inset-0" /> */}
+        <div className="hero-bg absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(
+              to bottom,
+              rgba(20, 12, 8, 0.55) 0%,
+              rgba(20, 12, 8, 0.25) 40%,
+              rgba(161, 61, 11, 0.25) 65%,
+              rgba(20, 12, 8, 0.70) 100%
+            ),
+            url(${heroImages[currentImg]})
+          `
+        }} />
 
         {/* Glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 1 }}>
@@ -140,16 +165,16 @@ export default function Home() {
           <div className="animate-fade-1 text-turmeric text-xl tracking-[0.8rem] mb-5" style={{ opacity: 0.9 }}>❖ ❖ ❖</div>
 
           <span className="animate-fade-1 inline-block  text-saffron text-[1rem] tracking-[0.25em] uppercase px-5 py-1.5 mb-6 font-hind" style={{ background: 'black' }}>
-            Uttar Pradesh · Heritage Homestay
+            Dehradun · Mountain Homestay
           </span>
 
           <h1 className="animate-fade-2 font-serif font-normal text-white leading-[1.1] text-5xl md:text-7xl" style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}>
-            Experience the Soul of<br />
-            <em className="italic" style={{ color: '#F2A830' }}>Uttar Pradesh</em>
+            A Home with a Story<br />
+            <em className="italic" style={{ color: '#F2A830' }}>in the Dehradun Hills</em>
           </h1>
 
           <p className="animate-fade-3 text-base md:text-lg max-w-xl mt-5 leading-relaxed font-hind" style={{ color: 'rgba(255,255,255,0.85)' }}>
-            Stay in a century-old haveli, wake up to temple bells, savour authentic awadhi cuisine — and feel the warmth of UP's timeless hospitality.
+            Nestled in the peaceful foothills of Dehradun, DAISY DALE is a living tribute to legacy, warmth, and quiet mountain hospitality — where guests are welcomed as family.
           </p>
 
           {/* <div className="animate-fade-4 flex flex-wrap gap-4 mt-10 justify-center">
@@ -311,7 +336,7 @@ export default function Home() {
         <div className="text-center mb-10">
           <span className="block text-saffron text-[0.65rem] tracking-[0.25em] uppercase font-hind mb-1">Photo Gallery</span>
           <div className="text-turmeric text-lg tracking-[0.6rem] opacity-50 my-2">✦ ✦ ✦</div>
-          <h2 className="font-serif text-4xl text-white font-normal">Life at <em className="italic text-turmeric">Haveli Stay</em></h2>
+          <h2 className="font-serif text-4xl text-white font-normal">Life at <em className="italic text-turmeric">DAISY DALE</em></h2>
         </div>
         <div ref={galleryRef} className="gallery-grid reveal max-w-5xl mx-auto">
           {[

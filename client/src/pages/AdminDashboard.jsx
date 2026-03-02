@@ -117,6 +117,7 @@ export default function AdminDashboard() {
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Booking ID</th>
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Guest</th>
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Room</th>
+                    <th className="text-left p-3 font-hind text-xs tracking-wider">Rooms</th>
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Dates</th>
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Guests</th>
                     <th className="text-left p-3 font-hind text-xs tracking-wider">Price</th>
@@ -130,16 +131,18 @@ export default function AdminDashboard() {
                       <td className="p-3 font-hind">{booking.bookingId}</td>
                       <td className="p-3">
                         <div className="font-hind">
-                          <div className="font-semibold">{booking.user?.name}</div>
-                          <div className="text-xs text-mud">{booking.user?.email}</div>
+                          <div className="font-semibold">{booking.isGuestBooking ? booking.guestName : booking.user?.name}</div>
+                          <div className="text-xs text-mud">{booking.isGuestBooking ? booking.guestEmail : booking.user?.email}</div>
+                          {booking.isGuestBooking && <div className="text-xs text-amber-600">👤 Guest Booking</div>}
                         </div>
                       </td>
                       <td className="p-3 font-hind">{booking.room?.name}</td>
+                      <td className="p-3 font-hind font-semibold">{booking.numberOfRooms || 1}</td>
                       <td className="p-3 font-hind text-xs">
                         {new Date(booking.checkIn).toLocaleDateString()} - {new Date(booking.checkOut).toLocaleDateString()}
                       </td>
                       <td className="p-3 font-hind">{booking.guests}</td>
-                      <td className="p-3 font-hind">₹{booking.totalPrice}</td>
+                      <td className="p-3 font-hind">₹{booking.totalPrice.toLocaleString()}</td>
                       <td className="p-3">
                         <span className={`text-xs px-2 py-1 rounded-full font-hind ${getStatusColor(booking.status)}`}>
                           {booking.status}

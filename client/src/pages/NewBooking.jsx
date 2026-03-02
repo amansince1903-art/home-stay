@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -75,16 +75,10 @@ function AmenitiesModal({ onClose }) {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h2 className="font-serif text-xl font-semibold">What this place offers</h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors bg-transparent border-none cursor-pointer text-lg"
-          >✕</button>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors bg-transparent border-none cursor-pointer text-lg">✕</button>
         </div>
-
-        {/* Scrollable Content */}
         <div className="overflow-y-auto flex-1 px-6 py-4">
           {amenitiesByCategory.map(({ category, items }) => (
             <div key={category} className="mb-6">
@@ -100,13 +94,8 @@ function AmenitiesModal({ onClose }) {
             </div>
           ))}
         </div>
-
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100">
-          <button
-            onClick={onClose}
-            className="w-full bg-ink text-white text-sm font-hind tracking-wider uppercase py-3 rounded-lg hover:bg-gray-800 transition-colors border-none cursor-pointer"
-          >
+          <button onClick={onClose} className="w-full bg-ink text-white text-sm font-hind tracking-wider uppercase py-3 rounded-lg hover:bg-gray-800 transition-colors border-none cursor-pointer">
             Close
           </button>
         </div>
@@ -126,13 +115,18 @@ export default function NewBooking() {
     checkIn: '',
     checkOut: '',
     guests: { adults: 2, children: 0, infants: 0 },
-    specialRequests: ''
+    specialRequests: '',
+    // Guest information (for non-logged-in users)
+    guestName: '',
+    guestEmail: '',
+    guestPhone: ''
   });
   const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('idle');
 
   const today = new Date().toISOString().split('T')[0];
+  const isGuestBooking = !user;
 
   useEffect(() => { fetchRooms(); }, []);
 
@@ -150,21 +144,52 @@ export default function NewBooking() {
   };
 
   useEffect(() => {
-    if (form.numberOfRooms && form.checkIn && form.checkOut) {
-      const availableCount = rooms.filter(room => room.inventory > 0).length;
+  const checkRealAvailability = async () => {
+    if (!form.numberOfRooms || !form.checkIn || !form.checkOut) return
+
+    // Adults capacity warning
+    const roomCapacity = rooms.length > 0 ? rooms[0].capacity : 2
+    const maxAdults = parseInt(form.numberOfRooms) * roomCapacity
+    if (form.guests.adults > maxAdults) {
+      toast.warning(`${form.numberOfRooms} room(s) can accommodate max ${maxAdults} adults`)
+    }
+
+    try {
+      const { data } = await axios.get(`/api/rooms/availability`, {
+        params: {
+          checkIn: form.checkIn,
+          checkOut: form.checkOut,
+          numberOfRooms: form.numberOfRooms
+        }
+      })
+      setAvailability({
+        available: data.available,
+        availableRooms: data.availableRooms,
+        totalRooms: data.totalRooms
+      })
+    } catch {
+      // fallback to inventory check
+      const availableCount = rooms.filter(r => r.inventory > 0).length
       setAvailability({
         available: parseInt(form.numberOfRooms) <= availableCount,
         availableRooms: availableCount,
         totalRooms: rooms.length
-      });
+      })
     }
-  }, [form.numberOfRooms, form.checkIn, form.checkOut, rooms]);
+  }
+  checkRealAvailability()
+}, [form.numberOfRooms, form.checkIn, form.checkOut, form.guests.adults, rooms]);
 
   const nights = form.checkIn && form.checkOut
     ? Math.ceil((new Date(form.checkOut) - new Date(form.checkIn)) / (1000 * 60 * 60 * 24)) : 0;
   const avgRoomPrice = rooms.length > 0
     ? rooms.reduce((sum, room) => sum + room.price, 0) / rooms.length : 0;
-  const totalGuests = form.guests.adults + form.guests.children + form.guests.infants;
+
+  // ✅ Only adults count for capacity — children & infants are FREE/excluded
+  const adults = form.guests.adults
+  const children = form.guests.children
+  const infants = form.guests.infants
+
   const totalPrice = form.numberOfRooms && nights > 0
     ? Math.round(avgRoomPrice * parseInt(form.numberOfRooms) * nights) : 0;
 
@@ -176,19 +201,46 @@ export default function NewBooking() {
     if (checkIn < todayDate) { toast.error('Check-in must be today or later'); return; }
     if (checkOut <= checkIn) { toast.error('Check-out must be after check-in'); return; }
     if (!availability?.available) { toast.error('Not enough rooms available'); return; }
+    
+    // Validate guest information if not logged in
+    if (isGuestBooking) {
+      if (!form.guestName || !form.guestEmail || !form.guestPhone) {
+        toast.error('Please fill in your contact information');
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
       const availableRoom = rooms.find(r => r.inventory > 0);
-      await axios.post('/api/bookings', {
+      const bookingData = {
         roomId: availableRoom._id,
         checkIn: form.checkIn,
         checkOut: form.checkOut,
-        guests: totalGuests,
+        numberOfRooms: parseInt(form.numberOfRooms), 
+        guests: adults, // ✅ only adults sent for capacity check
         specialRequests: form.specialRequests
-      });
+      };
+      
+      // Add guest information if not logged in
+      if (isGuestBooking) {
+        bookingData.guestName = form.guestName;
+        bookingData.guestEmail = form.guestEmail;
+        bookingData.guestPhone = form.guestPhone;
+      }
+      
+      await axios.post('/api/bookings', bookingData);
       setStatus('success');
-      toast.success('Booking created successfully!');
-      setTimeout(() => navigate('/dashboard'), 2000);
+      toast.success('Booking created successfully! Check your email for confirmation.');
+      
+      // Redirect based on user type
+      setTimeout(() => {
+        if (isGuestBooking) {
+          navigate('/'); // Guest goes to home
+        } else {
+          navigate('/dashboard'); // Logged-in user goes to dashboard
+        }
+      }, 2000);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Booking failed');
       setStatus('error');
@@ -205,7 +257,6 @@ export default function NewBooking() {
         subtitle="Create your booking with real-time availability"
       />
 
-      {/* Amenities Modal */}
       {showAmenitiesModal && <AmenitiesModal onClose={() => setShowAmenitiesModal(false)} />}
 
       <section className="py-16 px-6 md:px-14 bg-ivory">
@@ -261,6 +312,53 @@ export default function NewBooking() {
 
                 <GuestSelector onChange={(g) => setForm({ ...form, guests: g })} variant="light" />
 
+                {/* Guest Information (for non-logged-in users) */}
+                {isGuestBooking && (
+                  <div className="bg-amber-50 border-2 border-amber-300 rounded-sm p-4 space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-amber-600 text-lg">👤</span>
+                      <h3 className="font-serif text-base font-semibold text-amber-900">Your Contact Information</h3>
+                    </div>
+                    <div>
+                      <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Full Name *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="Enter your full name"
+                        value={form.guestName}
+                        onChange={(e) => setForm({ ...form, guestName: e.target.value })}
+                        className="form-input-light w-full" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Email Address *</label>
+                      <input 
+                        type="email" 
+                        required 
+                        placeholder="your.email@example.com"
+                        value={form.guestEmail}
+                        onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
+                        className="form-input-light w-full" 
+                      />
+                      <p className="text-xs text-amber-700 font-hind mt-1">Booking confirmation will be sent here</p>
+                    </div>
+                    <div>
+                      <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        required 
+                        placeholder="+91 98765 43210"
+                        value={form.guestPhone}
+                        onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
+                        className="form-input-light w-full" 
+                      />
+                    </div>
+                    <p className="text-xs text-amber-700 font-hind">
+                      💡 <Link to="/register" className="underline hover:text-amber-900">Create an account</Link> to track your bookings easily
+                    </p>
+                  </div>
+                )}
+
                 {form.numberOfRooms && form.checkIn && form.checkOut && (
                   <div className="bg-blue-50 border border-blue-300 p-4 rounded-sm">
                     <p className="text-sm font-hind text-blue-800 mb-2">🔍 Checking availability...</p>
@@ -285,11 +383,11 @@ export default function NewBooking() {
                 </div>
 
                 <button type="submit"
-                  disabled={loading || !availability?.available || !form.checkIn || !form.checkOut || totalGuests === 0}
+                  disabled={loading || !availability?.available || !form.checkIn || !form.checkOut || adults === 0}
                   className="w-full bg-saffron text-white text-sm font-hind tracking-widest uppercase py-3.5 rounded-sm hover:bg-saf-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed border-none cursor-pointer"
                 >
                   {loading ? 'Creating Booking...' :
-                   !form.checkIn || !form.checkOut || totalGuests === 0 ? 'Fill all required fields' :
+                   !form.checkIn || !form.checkOut || adults === 0 ? 'Fill all required fields' :
                    !availability ? 'Checking availability...' :
                    !availability.available ? 'Not enough rooms available' :
                    `Confirm Booking - ₹${totalPrice.toLocaleString()}`}
@@ -308,7 +406,9 @@ export default function NewBooking() {
                 <div className="space-y-2">
                   {[
                     ['Rooms', form.numberOfRooms],
-                    ['Guests', `${totalGuests} (${form.guests.adults}A, ${form.guests.children}C, ${form.guests.infants}I)`],
+                    ['Adults', adults],
+                    ...(children > 0 ? [['Children', children]] : []),
+                    ...(infants > 0 ? [['Infants', infants]] : []),
                     ['Nights', nights],
                     ['Avg. price/room/night', '₹' + Math.round(avgRoomPrice).toLocaleString()],
                   ].map(([label, val]) => (
@@ -317,6 +417,9 @@ export default function NewBooking() {
                       <span className="font-semibold">{val}</span>
                     </div>
                   ))}
+                  {(children > 0 || infants > 0) && (
+                    <p className="text-xs text-mud font-hind italic">* Children & infants stay free</p>
+                  )}
                   <div className="flex justify-between text-lg font-serif border-t border-parchment pt-2 mt-2">
                     <span>Total:</span>
                     <span className="text-saffron font-bold">₹{totalPrice.toLocaleString()}</span>
@@ -325,7 +428,7 @@ export default function NewBooking() {
               </div>
             )}
 
-            {/* Amenities - Airbnb Style */}
+            {/* Amenities */}
             <div className="bg-white p-5 rounded-sm border border-parchment shadow-sm">
               <h3 className="font-serif text-lg font-semibold mb-4">What this place offers</h3>
               <div className="divide-y divide-gray-100">

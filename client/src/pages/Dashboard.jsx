@@ -101,11 +101,12 @@ export default function Dashboard() {
                         <img src={booking.room.image} alt={booking.room.name} className="w-24 h-24 object-cover rounded-sm" />
                       )}
                       <div className="flex-1">
-                        <h3 className="font-serif text-lg mb-1">{booking.room?.name}</h3>
+                        <h3 className="font-serif text-lg mb-1">{booking.room?.name} {booking.numberOfRooms > 1 && `× ${booking.numberOfRooms}`}</h3>
                         <div className="text-sm text-mud font-hind space-y-1">
                           <p>📅 {new Date(booking.checkIn).toLocaleDateString()} - {new Date(booking.checkOut).toLocaleDateString()}</p>
+                          <p>🏠 {booking.numberOfRooms || 1} room{(booking.numberOfRooms || 1) > 1 ? 's' : ''}</p>
                           <p>👥 {booking.guests} guests</p>
-                          <p>💰 ₹{booking.totalPrice}</p>
+                          <p>💰 ₹{booking.totalPrice.toLocaleString()}</p>
                           <p>🆔 {booking.bookingId}</p>
                         </div>
                       </div>
