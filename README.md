@@ -281,3 +281,5 @@ For support, email info@havelistay.in or create an issue in the repository.
 ---
 
 Built with ❤️ for Haveli Stay - Uttar Pradesh Heritage
+
+# home-stay
