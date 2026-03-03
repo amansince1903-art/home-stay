@@ -57,7 +57,7 @@ export default function Rooms() {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/rooms')
+        const response = await axios.get('/api/rooms')
         const roomsData = response.data.data.map(room => ({
           id: room._id,
           name: room.name,

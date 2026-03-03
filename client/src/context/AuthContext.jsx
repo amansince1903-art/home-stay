@@ -1,5 +1,11 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+
+// Configure axios base URL for production
+if (API_BASE_URL) {
+  axios.defaults.baseURL = API_BASE_URL;
+}
 
 const AuthContext = createContext();
 
