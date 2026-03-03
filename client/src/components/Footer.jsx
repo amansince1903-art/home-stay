@@ -48,7 +48,8 @@ export default function Footer() {
           <div className="text-white text-xs tracking-widest uppercase font-hind mb-4">Contact</div>
           <ul className="space-y-3 list-none">
             <li className="text-white/50 text-xs font-hind">📍 Dehradun Foothills, Uttarakhand</li>
-            <li><a href="tel:+919129586522" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">📞 +91 91295 86522</a></li>
+            <li><a href="tel:+917060379939" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">📞 +91 70603 79939</a></li>
+            <li><a href="tel:+918859951500" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">📞 +91 88599 51500</a></li>
             <li><a href="mailto:info@daisydale.in" className="text-white/50 text-xs font-hind no-underline hover:text-saffron">✉ info@daisydale.in</a></li>
             <li className="text-white/50 text-xs font-hind">🕐 Open Daily · 24/7 Support</li>
           </ul>

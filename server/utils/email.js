@@ -162,8 +162,8 @@ export const sendBookingConfirmation = async (booking) => {
       <h3 style="margin:0 0 12px;color:#F2A830;font-size:15px;letter-spacing:1px;">Need Help?</h3>
       <p style="margin:0 0 16px;color:rgba(255,255,255,0.8);font-size:13px;font-family:Arial,sans-serif;">Our host family is available 24/7</p>
       <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
-        <a href="tel:+919129586522" style="background:#E8721C;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">📞 Call Us</a>
-        <a href="https://wa.me/919129586522" style="background:#25D366;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">💬 WhatsApp</a>
+        <a href="tel:+917060379939" style="background:#E8721C;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">📞 Call Us</a>
+        <a href="https://wa.me/917060379939" style="background:#25D366;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">💬 WhatsApp</a>
         <a href="mailto:info@daisydale.in" style="background:#ffffff22;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;border:1px solid rgba(255,255,255,0.3);">✉️ Email</a>
       </div>
     </div>
@@ -172,7 +172,7 @@ export const sendBookingConfirmation = async (booking) => {
     <div style="text-align:center;padding:20px 0;">
       <div style="font-size:11px;letter-spacing:4px;color:#E8721C;text-transform:uppercase;font-family:Arial,sans-serif;margin-bottom:8px;">❖ ❖ ❖</div>
       <p style="margin:0;color:#8B7355;font-size:12px;font-family:Arial,sans-serif;">DAISY DALE · Dehradun Foothills, Uttarakhand, India</p>
-      <p style="margin:6px 0 0;color:#B0967A;font-size:11px;font-family:Arial,sans-serif;">info@daisydale.in · +91 91295 86522</p>
+      <p style="margin:6px 0 0;color:#B0967A;font-size:11px;font-family:Arial,sans-serif;">info@daisydale.in · +91 70603 79939 · +91 88599 51500</p>
     </div>
 
   </div>

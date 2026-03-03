@@ -41,7 +41,8 @@ export default function Contact() {
             <div className="space-y-5">
               {[
                 { icon: '📍', label: 'Address',           value: 'DAISY DALE, Dehradun Foothills, Uttarakhand, India' },
-                { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 91295 86522',   href: 'tel:+919129586522' },
+                { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 70603 79939',   href: 'tel:+917060379939' },
+                { icon: '📞', label: 'Phone / WhatsApp',  value: '+91 88599 51500',   href: 'tel:+918859951500' },
                 { icon: '✉️', label: 'Email',             value: 'info@daisydale.in', href: 'mailto:info@daisydale.in' },
                 { icon: '🕐', label: 'Reception Hours',   value: '24/7 Support Available' },
               ].map(item => (
@@ -82,7 +83,7 @@ export default function Contact() {
                 {[
                   { label: 'Full Name *',  name: 'name',  type: 'text',  placeholder: 'Aapka naam',       required: true },
                   { label: 'Email *',      name: 'email', type: 'email', placeholder: 'email@example.com', required: true },
-                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '+91 91295 86522',   required: false },
+                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '+91 70603 79939',   required: false },
                 ].map(f => (
                   <div key={f.name} className="flex flex-col gap-1">
                     <label className="text-mud text-[0.6rem] tracking-widest uppercase font-hind">{f.label}</label>

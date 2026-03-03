@@ -175,7 +175,7 @@ const [currentImg, setCurrentImg] = useState(0)
 
           <h1 className="animate-fade-2 font-serif font-normal text-white leading-[1.1] text-5xl md:text-7xl" style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}>
             A Home with a Story<br />
-            <em className="italic" style={{ color: '#F2A830' }}>in the Dehradun Hills</em>
+            <em className="italic" style={{ color: '#F2A830' }}>in the Hills of Dehradun</em>
           </h1>
 
           <p className="animate-fade-3 text-base md:text-lg max-w-xl mt-5 leading-relaxed font-hind" style={{ color: 'rgba(255,255,255,0.85)' }}>

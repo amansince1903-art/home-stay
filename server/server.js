@@ -75,7 +75,7 @@ app.post('/api/seed-production', async (req, res) => {
       name: 'Admin',
       email: 'admin@havelistay.in',
       password: 'admin123',
-      phone: '+919129586522',
+      phone: '+917060379939',
       role: 'admin'
     });
 
