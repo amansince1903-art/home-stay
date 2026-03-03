@@ -20,12 +20,14 @@ import dinningArea from '../assets/images/dinning area.jpg'
 // New DAISY DALE images
 import d2 from '../assets/images/d2.jpeg'
 import d3 from '../assets/images/d3.png'
+import d4 from '../assets/images/d4.jpg'
 import daisyStay3 from '../assets/images/daisy stay 3.jpg'
 
 const images = [
   { src: daisyStay3, thumb: daisyStay3, alt: 'DAISY DALE Exterior', large: true },
   { src: d2, thumb: d2, alt: 'DAISY DALE View' },
   { src: d3, thumb: d3, alt: 'DAISY DALE Garden' },
+  { src: d4, thumb: d4, alt: 'DAISY DALE Property' },
   { src: galleryImage, thumb: galleryImage, alt: 'Mountain View' },
   { src: haveliOutdoor, thumb: haveliOutdoor, alt: 'Outdoor Area' },
   { src: room1, thumb: room1, alt: 'Bedroom 1' },

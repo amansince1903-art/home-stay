@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 bg-ink/90 backdrop-blur-md border-b border-white/10 ${scrolled ? 'scrolled' : ''}`}>
       <div className="bg-maroon text-white text-xs text-center py-1.5 tracking-widest font-hind">
-        📞 +91 98765 43210 &nbsp;|&nbsp; ✉ info@havelistay.in &nbsp;|&nbsp; 🕐 Open Daily 7AM – 10PM
+        📞 +91 91295 86522 &nbsp;|&nbsp; ✉ info@daisydale.in &nbsp;|&nbsp; 🕐 24/7 Support
       </div>
 
       <div className="flex items-center justify-between px-6 md:px-14 py-3">

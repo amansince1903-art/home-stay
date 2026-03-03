@@ -347,7 +347,7 @@ export default function NewBooking() {
                       <input 
                         type="tel" 
                         required 
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 91295 86522"
                         value={form.guestPhone}
                         onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
                         className="form-input-light w-full" 

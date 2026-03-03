@@ -160,11 +160,11 @@ export const sendBookingConfirmation = async (booking) => {
     <!-- Contact Info -->
     <div style="background:linear-gradient(135deg,#7B1C2E,#5a1422);border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
       <h3 style="margin:0 0 12px;color:#F2A830;font-size:15px;letter-spacing:1px;">Need Help?</h3>
-      <p style="margin:0 0 16px;color:rgba(255,255,255,0.8);font-size:13px;font-family:Arial,sans-serif;">Our host family is available 7AM – 10PM daily</p>
+      <p style="margin:0 0 16px;color:rgba(255,255,255,0.8);font-size:13px;font-family:Arial,sans-serif;">Our host family is available 24/7</p>
       <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
-        <a href="tel:+919876543210" style="background:#E8721C;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">📞 Call Us</a>
-        <a href="https://wa.me/919876543210" style="background:#25D366;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">💬 WhatsApp</a>
-        <a href="mailto:info@havelistay.in" style="background:#ffffff22;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;border:1px solid rgba(255,255,255,0.3);">✉️ Email</a>
+        <a href="tel:+919129586522" style="background:#E8721C;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">📞 Call Us</a>
+        <a href="https://wa.me/919129586522" style="background:#25D366;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;">💬 WhatsApp</a>
+        <a href="mailto:info@daisydale.in" style="background:#ffffff22;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:13px;font-family:Arial,sans-serif;border:1px solid rgba(255,255,255,0.3);">✉️ Email</a>
       </div>
     </div>
 

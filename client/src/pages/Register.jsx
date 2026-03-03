@@ -63,7 +63,7 @@ export default function Register() {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="form-input-light w-full"
-              placeholder="+91 98765 43210"
+              placeholder="+91 91295 86522"
             />
           </div>
 

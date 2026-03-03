@@ -21,6 +21,11 @@ import gallery2 from '../assets/images/gallery 2.jpg'
 import haveliOutdoor from '../assets/images/haveli outdoor.jpg'
 import outdoor1 from '../assets/images/outdoor  1.jpg'
 import outdoor2 from '../assets/images/outdoor 2.jpg'
+// New DAISY DALE images
+import daisyStay3 from '../assets/images/daisy stay 3.jpg'
+import d2 from '../assets/images/d2.jpeg'
+import d3 from '../assets/images/d3.png'
+import d4 from '../assets/images/d4.jpg'
 
 // Import local room images
 import room1 from '../assets/images/room 1.jpg'
@@ -340,11 +345,12 @@ const [currentImg, setCurrentImg] = useState(0)
         </div>
         <div ref={galleryRef} className="gallery-grid reveal max-w-5xl mx-auto">
           {[
-            { src: galleryImage, large: true, alt: 'Haveli Gallery' },
-            { src: gallery2, alt: 'Gallery View' },
-            { src: haveliOutdoor, alt: 'Haveli Outdoor' },
-            { src: outdoor1, alt: 'Outdoor Area 1' },
-            { src: outdoor2, alt: 'Outdoor Area 2' },
+            { src: daisyStay3, large: true, alt: 'DAISY DALE Exterior' },
+            { src: d2, alt: 'DAISY DALE Mountain View' },
+            { src: d3, alt: 'DAISY DALE Garden' },
+            { src: d4, alt: 'DAISY DALE Property' },
+            { src: outdoor1, alt: 'Outdoor Seating Area' },
+            { src: gallery2, alt: 'Property View' },
           ].map((img, i) => (
             <div key={i} className={`gallery-item${img.large ? ' gallery-item--large' : ''}`}>
               <img src={img.src} alt={img.alt} />
