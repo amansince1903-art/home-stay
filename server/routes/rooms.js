@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ NEW — Real availability check by date range
+// ✅ Real availability check — counts numberOfRooms from each booking
 router.get('/availability', async (req, res) => {
   try {
     const { checkIn, checkOut, numberOfRooms } = req.query
@@ -23,21 +23,29 @@ router.get('/availability', async (req, res) => {
 
     const allRooms = await Room.find({ status: 'active' })
 
-    let availableCount = 0
+    let totalAvailable = 0
+
     for (const room of allRooms) {
-      const overlapping = await Booking.countDocuments({
+      // Get all overlapping bookings for this room
+      const overlappingBookings = await Booking.find({
         room: room._id,
         status: { $in: ['pending', 'confirmed', 'checked-in'] },
         checkIn: { $lt: checkOutDate },
         checkOut: { $gt: checkInDate }
       })
-      if (overlapping < room.inventory) availableCount++
+
+      // Sum numberOfRooms from all overlapping bookings
+      const bookedRooms = overlappingBookings.reduce((sum, b) => sum + (b.numberOfRooms || 1), 0)
+
+      // How many rooms are still free
+      const freeRooms = room.inventory - bookedRooms
+      if (freeRooms > 0) totalAvailable += freeRooms
     }
 
     res.json({
-      available: availableCount >= parseInt(numberOfRooms),
-      availableRooms: availableCount,
-      totalRooms: allRooms.length
+      available: totalAvailable >= parseInt(numberOfRooms),
+      availableRooms: totalAvailable,
+      totalRooms: allRooms.reduce((sum, r) => sum + r.inventory, 0)
     })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -78,15 +86,15 @@ router.post('/check-availability', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Room not found' });
     }
 
-    const overlappingBookings = await Booking.countDocuments({
+    const overlappingBookings = await Booking.find({
       room: roomId,
       status: { $in: ['pending', 'confirmed', 'checked-in'] },
-      $or: [
-        { checkIn: { $lt: checkOutDate }, checkOut: { $gt: checkInDate } }
-      ]
+      checkIn: { $lt: checkOutDate },
+      checkOut: { $gt: checkInDate }
     });
 
-    const available = room.inventory - overlappingBookings;
+    const bookedRooms = overlappingBookings.reduce((sum, b) => sum + (b.numberOfRooms || 1), 0)
+    const available = room.inventory - bookedRooms;
 
     res.json({
       success: true,
@@ -94,7 +102,7 @@ router.post('/check-availability', async (req, res) => {
         available: available > 0,
         availableCount: Math.max(0, available),
         totalInventory: room.inventory,
-        bookedCount: overlappingBookings
+        bookedCount: bookedRooms
       }
     });
   } catch (error) {

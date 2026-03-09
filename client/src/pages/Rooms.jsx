@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import PageHeader from '../components/PageHeader'
 import useReveal from '../components/useReveal'
@@ -22,7 +22,7 @@ const roomImages = {
   'Bedroom 6': room6
 }
 
-function RoomCard({ room, reverse }) {
+function RoomCard({ room, reverse, searchParams }) {
   const ref = useReveal()
   return (
     <div ref={ref} className="reveal grid md:grid-cols-2 gap-8 items-center bg-white rounded-sm shadow-md overflow-hidden border border-parchment">
@@ -43,7 +43,7 @@ function RoomCard({ room, reverse }) {
             <span className="font-serif text-3xl font-bold text-saffron">{room.price}</span>
             <span className="text-xs text-mud font-hind"> / night</span>
           </div>
-          <Link to="/booking" className="bg-saffron text-white text-sm font-hind tracking-widest uppercase px-6 py-2.5 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book This Room</Link>
+          <Link to={`/booking${searchParams}`} className="bg-saffron text-white text-sm font-hind tracking-widest uppercase px-6 py-2.5 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book This Room</Link>
         </div>
       </div>
     </div>
@@ -53,6 +53,8 @@ function RoomCard({ room, reverse }) {
 export default function Rooms() {
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
+  const location = useLocation()        
+  const searchParams = location.search  
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -99,7 +101,7 @@ export default function Rooms() {
               <p className="text-mud font-hind text-lg">No rooms available</p>
             </div>
           ) : (
-            rooms.map((room, i) => <RoomCard key={room.id} room={room} reverse={i % 2 === 1} />)
+           rooms.map((room, i) => <RoomCard key={room.id} room={room} reverse={i % 2 === 1} searchParams={searchParams} />)
           )}
         </div>
       </section>

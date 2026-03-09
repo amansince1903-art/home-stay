@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import GuestSelector from '../components/GuestSelector'
 import RoomSelector from '../components/RoomSelector'
-// Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react'
-// Import Swiper modules
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
-// Import Swiper styles
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -21,7 +18,6 @@ import gallery2 from '../assets/images/gallery 2.jpg'
 import haveliOutdoor from '../assets/images/haveli outdoor.jpg'
 import outdoor1 from '../assets/images/outdoor  1.jpg'
 import outdoor2 from '../assets/images/outdoor 2.jpg'
-// New DAISY DALE images
 import daisyStay3 from '../assets/images/daisy stay 3.jpg'
 import d2 from '../assets/images/d2.jpeg'
 import d3 from '../assets/images/d3.png'
@@ -38,7 +34,6 @@ import room7 from '../assets/images/d2.jpeg'
 import room8 from '../assets/images/d3.png'
 import room9 from '../assets/images/daisy stay 3.jpg'
 
-// Map room images by bedroom number
 const roomImages = {
   'Bedroom 1': room1,
   'Bedroom 2': room2,
@@ -48,27 +43,15 @@ const roomImages = {
   'Bedroom 6': room6
 }
 
-/* ── Data ── */
-const destinations = [
-  { name: 'Agra',       sub: 'Taj Mahal · Mughal Heritage',  img: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=500&q=80' },
-  { name: 'Varanasi',   sub: 'Ghats · Spiritual Capital',    img: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=500&q=80' },
-  { name: 'Lucknow',    sub: 'Nawabi · Awadhi Cuisine',      img: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=80' },
-  { name: 'Prayagraj',  sub: 'Sangam · Kumbh Mela',         img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80' },
-]
-
 const reviews = [
   { name: 'Priya Malhotra',       loc: 'Delhi · 4 nights',       avatar: 'https://i.pravatar.cc/60?img=22', text: 'DAISY DALE is a hidden gem in Dehradun. The mountain views, the warmth of the family, and the homemade meals made us feel truly at home. A perfect escape from city life!' },
-  { name: 'Arjun & Meera Kapoor', loc: 'Mumbai · 6 nights',     avatar: 'https://i.pravatar.cc/60?img=55', text: 'The peaceful mornings with sunrise views and evening tea in the garden were magical. The hosts shared beautiful stories of their Army legacy. Highly recommend!' },
-  { name: 'David Thompson',        loc: 'London, UK · 5 nights', avatar: 'https://i.pravatar.cc/60?img=38', text: 'As a solo traveler, I felt completely safe and welcomed. The personal attention, local recommendations, and authentic hospitality made my Dehradun trip unforgettable!' },
+  { name: 'Arjun & Meera Kapoor', loc: 'Mumbai · 6 nights',      avatar: 'https://i.pravatar.cc/60?img=55', text: 'The peaceful mornings with sunrise views and evening tea in the garden were magical. The hosts shared beautiful stories of their Army legacy. Highly recommend!' },
+  { name: 'David Thompson',        loc: 'London, UK · 5 nights',  avatar: 'https://i.pravatar.cc/60?img=38', text: 'As a solo traveler, I felt completely safe and welcomed. The personal attention, local recommendations, and authentic hospitality made my Dehradun trip unforgettable!' },
 ]
 
-const features = ['Homemade Mountain Cuisine', 'Nature & Garden Seating', 'Sunrise Mountain Views', 'Airport / Station Pickup', 'Local Area Guidance', 'Free WiFi']
-
-/* ── Counter component ── */
 function Counter({ target, suffix = '' }) {
   const [count, setCount] = useState(0)
   const ref = useReveal()
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -86,33 +69,35 @@ function Counter({ target, suffix = '' }) {
     obs.observe(el)
     return () => obs.disconnect()
   }, [target, ref])
-
   return <span ref={ref}>{count}{suffix}</span>
 }
 
 export default function Home() {
+  const navigate = useNavigate()
   const heroImages = [room7, room8, room9]
-const [currentImg, setCurrentImg] = useState(0)
+  const [currentImg, setCurrentImg] = useState(0)
+
   const destRef    = useReveal()
-  const aboutImgR  = useReveal()
-  const aboutTxtR  = useReveal()
   const roomsRef   = useReveal()
   const galleryRef = useReveal()
   const reviewsRef = useReveal()
-  const statsRef   = useReveal()
 
   const [quickBooking, setQuickBooking] = useState({ checkin: '', checkout: '' })
+  const [guestData, setGuestData] = useState({ adults: 2, children: 0, infants: 0 })
+  const [roomCount, setRoomCount] = useState(1)
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // ── Hero slideshow
   useEffect(() => {
-  const timer = setInterval(() => {
-    setCurrentImg(i => (i + 1) % heroImages.length)
-  }, 4000)
-  return () => clearInterval(timer)
-}, [])
+    heroImages.forEach(src => { const img = new Image(); img.src = src }) // preload
+    const timer = setInterval(() => {
+      setCurrentImg(i => (i + 1) % heroImages.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
 
-  
+  // ── Fetch rooms
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -125,7 +110,7 @@ const [currentImg, setCurrentImg] = useState(0)
           badgeColor: room.name === 'Bedroom 1' ? 'bg-saffron' : '',
           status: room.inventory > 1 ? 'Available' : `${room.inventory} Left`,
           statusColor: room.inventory > 1 ? 'bg-forest' : 'bg-maroon',
-          img: roomImages[room.name] || room.image, // Use local image if available
+          img: roomImages[room.name] || room.image,
           desc: room.description,
           amenities: room.amenities.slice(0, 4)
         }))
@@ -138,27 +123,59 @@ const [currentImg, setCurrentImg] = useState(0)
     }
     fetchRooms()
   }, [])
-  
+
   const handleDateChange = (dates) => {
-    setQuickBooking({ checkin: dates.checkIn, checkout: dates.checkOut });
-  };
+    setQuickBooking({ checkin: dates.checkIn, checkout: dates.checkOut })
+  }
+
+  // ── Build URL params and navigate
+  const handleCheckAvailability = (e) => {
+    e.preventDefault()
+    const params = new URLSearchParams({
+      checkIn:  quickBooking.checkin  || '',
+      checkOut: quickBooking.checkout || '',
+      adults:   guestData.adults,
+      children: guestData.children,
+      infants:  guestData.infants,
+      rooms:    roomCount
+    })
+    console.log("params",params)
+    navigate(`/rooms?${params}`)
+  }
+
+  // ── Build booking URL with current params (for room cards)
+  const bookingUrl = () => {
+    const params = new URLSearchParams({
+      checkIn:  quickBooking.checkin  || '',
+      checkOut: quickBooking.checkout || '',
+      adults:   guestData.adults,
+      children: guestData.children,
+      infants:  guestData.infants,
+      rooms:    roomCount
+    })
+    return `/booking?${params}`
+  }
 
   return (
     <>
       {/* ── HERO ── */}
       <section className="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden" style={{ backgroundColor: '#120a06' }}>
-        {/* <div className="hero-bg absolute inset-0" /> */}
+        {/* Current image */}
         <div className="hero-bg absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(
-              to bottom,
-              rgba(20, 12, 8, 0.55) 0%,
-              rgba(20, 12, 8, 0.25) 40%,
-              rgba(161, 61, 11, 0.25) 65%,
-              rgba(20, 12, 8, 0.70) 100%
-            ),
+            linear-gradient(to bottom, rgba(20,12,8,0.55) 0%, rgba(20,12,8,0.25) 40%, rgba(161,61,11,0.25) 65%, rgba(20,12,8,0.70) 100%),
             url(${heroImages[currentImg]})
-          `
+          `,
+          opacity: 1,
+          transition: 'opacity 1s ease-in-out'
+        }} />
+        {/* Next image preloaded underneath */}
+        <div className="hero-bg absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(to bottom, rgba(20,12,8,0.55) 0%, rgba(20,12,8,0.25) 40%, rgba(161,61,11,0.25) 65%, rgba(20,12,8,0.70) 100%),
+            url(${heroImages[(currentImg + 1) % heroImages.length]})
+          `,
+          opacity: 0
         }} />
 
         {/* Glow */}
@@ -168,34 +185,19 @@ const [currentImg, setCurrentImg] = useState(0)
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2 }}>
           <div className="animate-fade-1 text-turmeric text-xl tracking-[0.8rem] mb-5" style={{ opacity: 0.9 }}>❖ ❖ ❖</div>
-
-          <span className="animate-fade-1 inline-block  text-saffron text-[1rem] tracking-[0.25em] uppercase px-5 py-1.5 mb-6 font-hind" style={{ background: 'black' }}>
+          <span className="animate-fade-1 inline-block text-saffron text-[1rem] tracking-[0.25em] uppercase px-5 py-1.5 mb-6 font-hind" style={{ background: 'black' }}>
             Dehradun · Mountain Homestay
           </span>
-
           <h1 className="animate-fade-2 font-serif font-normal text-white leading-[1.1] text-5xl md:text-7xl" style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}>
             A Home with a Story<br />
             <em className="italic" style={{ color: '#F2A830' }}>in the Hills of Dehradun</em>
           </h1>
-
           <p className="animate-fade-3 text-base md:text-lg max-w-xl mt-5 leading-relaxed font-hind" style={{ color: 'rgba(255,255,255,0.85)' }}>
             Nestled in the peaceful foothills of Dehradun, DAISY DALE is a living tribute to legacy, warmth, and quiet mountain hospitality — where guests are welcomed as family.
           </p>
-
-          {/* <div className="animate-fade-4 flex flex-wrap gap-4 mt-10 justify-center">
-            <Link to="/rooms" className="bg-saffron text-white text-sm font-hind tracking-widest uppercase px-9 py-3.5 rounded-sm hover:bg-saf-dark hover:-translate-y-0.5 transition-all no-underline" style={{ boxShadow: '0 4px 20px rgba(232,114,28,0.5)' }}>
-              Explore Rooms
-            </Link>
-            <Link to="/booking" className="bg-black text-white text-sm font-hind tracking-widest uppercase px-9 py-3.5 rounded-sm border border-white/50 hover:bg-black hover:border-white transition-all no-underline">
-              Book a Stay
-            </Link>
-          </div> */}
         </div>
 
-        {/* Bottom line */}
         <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(232,114,28,0.5), transparent)', zIndex: 2 }} />
-
-        {/* Scroll */}
         <div className="animate-dip absolute md:text-lg bottom-8 flex flex-col items-center gap-1.5 text-[0.6rem] tracking-[0.18em] uppercase font-hind" style={{ color: 'orange', zIndex: 2 }}>
           Scroll Down
           <span className="block w-px h-10 mt-1" style={{ background: 'rgba(255,255,255,0.3)' }} />
@@ -204,15 +206,12 @@ const [currentImg, setCurrentImg] = useState(0)
 
       {/* ── QUICK BOOKING BAR ── */}
       <div className="bg-maroon py-5 px-6 md:px-14">
-        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={e => { e.preventDefault(); window.location.href = '/rooms' }}>
+        <form className="max-w-5xl mx-auto flex flex-wrap md:flex-nowrap gap-3 items-end" onSubmit={handleCheckAvailability}>
           <DateRangePicker onDateChange={handleDateChange} />
-          
-          <GuestSelector onChange={(g) => console.log('Guests:', g)} />
-
-          <RoomSelector onChange={(r) => console.log('Rooms:', r)} />
-
-          <button 
-            type="submit" 
+          <GuestSelector onChange={(g) => setGuestData(g)} />
+          <RoomSelector onChange={(r) => setRoomCount(r)} />
+          <button
+            type="submit"
             disabled={!quickBooking.checkin || !quickBooking.checkout}
             className="bg-saffron text-white text-sm font-hind tracking-widest uppercase px-8 py-2.5 rounded-sm hover:bg-saf-dark transition-colors whitespace-nowrap border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-saffron"
           >
@@ -220,53 +219,6 @@ const [currentImg, setCurrentImg] = useState(0)
           </button>
         </form>
       </div>
-
-      {/* ── DESTINATIONS ── */}
-      {/* <section className="py-20 px-6 md:px-14 bg-ivory">
-        <div ref={destRef} className="reveal text-center mb-12">
-          <span className="section-label">Why Uttar Pradesh</span>
-          <div className="text-saffron text-lg tracking-[0.6rem] opacity-50 my-2">✦ ✦ ✦</div>
-          <h2 className="font-serif text-4xl md:text-5xl font-normal">The Heart of <em className="italic text-saffron">Incredible India</em></h2>
-          <p className="text-mud-light text-sm leading-relaxed mt-3 max-w-xl mx-auto font-hind">From the Mughal grandeur of Agra to the spiritual ghats of Varanasi — UP is a land where every corner tells a thousand-year-old story.</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {destinations.map(d => (
-            <div key={d.name} className="group relative overflow-hidden rounded-sm cursor-pointer h-52 md:h-64">
-              <img src={d.img} alt={d.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent" />
-              <div className="absolute bottom-3 left-3 text-white">
-                <div className="font-serif text-lg font-semibold leading-tight">{d.name}</div>
-                <div className="text-turmeric text-xs font-hind tracking-wider">{d.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section> */}
-
-      {/* ── ABOUT STRIP ── */}
-      {/* <section className="pattern-bg py-20 px-6 md:px-14">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-14 items-center">
-          <div ref={aboutImgR} className="reveal relative">
-            <img src="https://images.unsplash.com/photo-1583340806474-a2fab0a46f9e?w=800&q=80" alt="Heritage Haveli" className="w-full h-72 md:h-96 object-cover rounded-sm shadow-xl" />
-            <div className="absolute -bottom-4 -right-4 bg-saffron text-white p-4 text-center rounded-sm shadow-lg">
-              <div className="font-serif text-3xl font-bold leading-none"><Counter target={25} suffix="+" /></div>
-              <div className="text-[0.6rem] tracking-widest uppercase font-hind mt-1">Years of Heritage</div>
-            </div>
-          </div>
-          <div ref={aboutTxtR} className="reveal">
-            <span className="section-label">Our Heritage Home</span>
-            <div className="text-saffron text-base opacity-50 tracking-[0.3rem] my-2">✦ ✦ ✦</div>
-            <h2 className="font-serif text-3xl md:text-4xl font-normal leading-tight">
-              A 19th Century Haveli,<br />Now Your <em className="italic text-saffron">Home</em>
-            </h2>
-            <p className="text-mud text-sm leading-relaxed mt-4 font-hind">Nestled in the lanes of old Lucknow, our haveli was built in 1887 by Nawab Faiz Ali Khan. Its arched corridors, carved jali windows, and inner courtyards have witnessed a century of UP's rich history — now open to welcome you.</p>
-            <div className="grid grid-cols-2 gap-2 mt-5">
-              {features.map(f => <div key={f} className="feat-item">{f}</div>)}
-            </div>
-            <Link to="/about" className="inline-block mt-7 bg-saffron text-white text-sm font-hind tracking-widest uppercase px-8 py-3 rounded-sm hover:bg-saf-dark hover:-translate-y-0.5 transition-all no-underline">Know Our Story</Link>
-          </div>
-        </div>
-      </section> */}
 
       {/* ── ROOMS PREVIEW ── */}
       <section className="py-20 px-6 md:px-14 bg-ivory">
@@ -277,13 +229,9 @@ const [currentImg, setCurrentImg] = useState(0)
         </div>
         <div ref={roomsRef} className="reveal max-w-6xl mx-auto">
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-mud font-hind">Loading rooms...</p>
-            </div>
+            <div className="text-center py-12"><p className="text-mud font-hind">Loading rooms...</p></div>
           ) : rooms.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-mud font-hind">No rooms available</p>
-            </div>
+            <div className="text-center py-12"><p className="text-mud font-hind">No rooms available</p></div>
           ) : (
             <Swiper
               key="rooms-swiper"
@@ -292,43 +240,37 @@ const [currentImg, setCurrentImg] = useState(0)
               slidesPerView={1}
               navigation
               pagination={{ clickable: true }}
-              autoplay={{ 
-                delay: 4000, 
-                disableOnInteraction: false
-              }}
-              breakpoints={{
-                640: { slidesPerView: 1 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 }
-              }}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              breakpoints={{ 640: { slidesPerView: 1 }, 768: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }}
               className="rooms-swiper"
             >
-            {rooms.map(r => (
-              <SwiperSlide key={r.id}>
-                <div className="bg-white rounded-sm overflow-hidden shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 border border-parchment h-full">
-                  <div className="relative h-52 overflow-hidden">
-                    <img src={r.img} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                    {r.badge && <span className={`absolute top-3 left-3 ${r.badgeColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.badge}</span>}
-                    <span className={`absolute top-3 right-3 ${r.statusColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.status}</span>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-serif text-xl font-semibold">{r.name}</h3>
-                    <p className="text-mud text-xs leading-relaxed mt-1 mb-3 font-hind">{r.desc}</p>
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {r.amenities.map(a => <span key={a} className="amenity-tag">{a}</span>)}
+              {rooms.map(r => (
+                <SwiperSlide key={r.id}>
+                  <div className="bg-white rounded-sm overflow-hidden shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 border border-parchment h-full">
+                    <div className="relative h-52 overflow-hidden">
+                      <img src={r.img} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                      {r.badge && <span className={`absolute top-3 left-3 ${r.badgeColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.badge}</span>}
+                      <span className={`absolute top-3 right-3 ${r.statusColor} text-white text-[0.58rem] tracking-widest uppercase px-2.5 py-1 font-hind`}>{r.status}</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-parchment pt-4">
-                      <div>
-                        <span className="font-serif text-2xl font-semibold text-saffron">{r.price}</span>
-                        <span className="text-xs text-mud font-hind"> / night</span>
+                    <div className="p-5">
+                      <h3 className="font-serif text-xl font-semibold">{r.name}</h3>
+                      <p className="text-mud text-xs leading-relaxed mt-1 mb-3 font-hind">{r.desc}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {r.amenities.map(a => <span key={a} className="amenity-tag">{a}</span>)}
                       </div>
-                      <Link to="/booking" className="bg-saffron text-white text-xs font-hind tracking-wider uppercase px-4 py-2 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book</Link>
+                      <div className="flex items-center justify-between border-t border-parchment pt-4">
+                        <div>
+                          <span className="font-serif text-2xl font-semibold text-saffron">{r.price}</span>
+                          <span className="text-xs text-mud font-hind"> / night</span>
+                        </div>
+                        {/* ✅ Passes dates + guests to booking page */}
+                        <Link to={bookingUrl()} className="bg-saffron text-white text-xs font-hind tracking-wider uppercase px-4 py-2 rounded-sm hover:bg-saf-dark transition-colors no-underline">Book</Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           )}
         </div>
         <div className="text-center mt-8">
@@ -358,21 +300,9 @@ const [currentImg, setCurrentImg] = useState(0)
           ))}
         </div>
         <div className="text-center mt-8">
-          <Link to="/gallery" className="inline-block border border-saffron text-saffron text-sm font-hind tracking-widest uppercase px-10 py-3 rounded-sm hover:bg-saffron hover:text-white transition-all no-underlin">View Full Gallery</Link>
+          <Link to="/gallery" className="inline-block border border-saffron text-saffron text-sm font-hind tracking-widest uppercase px-10 py-3 rounded-sm hover:bg-saffron hover:text-white transition-all no-underline">View Full Gallery</Link>
         </div>
       </section>
-
-      {/* ── STATS ── */}
-      {/* <section className="bg-saffron py-14 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[{ n: 500, s: '+', l: 'Happy Guests' }, { n: 25, s: '+', l: 'Years Heritage' }, { n: 4, s: ' Cities', l: 'UP Destinations' }, { n: 98, s: '%', l: 'Guest Satisfaction' }].map(stat => (
-            <div key={stat.l}>
-              <div className="font-serif text-4xl md:text-5xl font-bold text-white"><Counter target={stat.n} suffix={stat.s} /></div>
-              <div className="text-white/75 text-xs tracking-widest uppercase mt-1 font-hind">{stat.l}</div>
-            </div>
-          ))}
-        </div>
-      </section> */}
 
       {/* ── REVIEWS ── */}
       <section className="py-20 px-6 md:px-14 bg-parchment">

@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 
-export default function GuestSelector({ onChange, variant = 'dark' }) {
+export default function GuestSelector({ onChange, variant = 'dark', value }) {
   const [open, setOpen] = useState(false)
-  const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0 })
+  const [guests, setGuests] = useState(value || { adults: 2, children: 0, infants: 0 })
   const ref = useRef(null)
+
+  // Sync when value changes from outside (URL params)
+useEffect(() => {
+  if (value) setGuests(value)
+}, [value])
 
   // Close on outside click
   useEffect(() => {

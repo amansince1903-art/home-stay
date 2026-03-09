@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import PageHeader from '../components/PageHeader';
 import GuestSelector from '../components/GuestSelector';
 import RoomSelector from '../components/RoomSelector';
+import { validatePhone, cleanPhone } from '../utils/validation';
 
 /* ── Amenities Data by Category ── */
 const amenitiesByCategory = [
@@ -110,6 +111,7 @@ export default function NewBooking() {
   const [showAmenitiesModal, setShowAmenitiesModal] = useState(false)
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [phoneError, setPhoneError] = useState('');
   const [form, setForm] = useState({
     numberOfRooms: 1,
     checkIn: '',
@@ -129,6 +131,31 @@ export default function NewBooking() {
   const isGuestBooking = !user;
 
   useEffect(() => { fetchRooms(); }, []);
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search)
+  const checkIn    = params.get('checkIn')
+  const checkOut   = params.get('checkOut')
+  const adults     = parseInt(params.get('adults'))   || 2
+  const children   = parseInt(params.get('children')) || 0
+  const infants    = parseInt(params.get('infants'))  || 0
+  const rooms      = parseInt(params.get('rooms'))    || 1
+
+  if (checkIn || checkOut || rooms > 1) {
+    setForm(f => ({
+      ...f,
+      checkIn:       checkIn  || f.checkIn,
+      checkOut:      checkOut || f.checkOut,
+      numberOfRooms: rooms,
+      guests: { adults, children, infants }
+    }))
+  }
+}, [])
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, guestPhone: value });
+    if (phoneError) setPhoneError('');
+  };
 
   const fetchRooms = async () => {
     setLoadingRooms(true);
@@ -204,8 +231,16 @@ export default function NewBooking() {
     
     // Validate guest information if not logged in
     if (isGuestBooking) {
-      if (!form.guestName || !form.guestEmail || !form.guestPhone) {
-        toast.error('Please fill in your contact information');
+      // if (!form.guestName || !form.guestEmail || !form.guestPhone) {
+      //   toast.error('Please fill in your contact information');
+      //   return;
+      // }
+      
+      // Validate phone number
+      const phoneValidation = validatePhone(form.guestPhone);
+      if (!phoneValidation.valid) {
+        setPhoneError(phoneValidation.message);
+        toast.error(phoneValidation.message);
         return;
       }
     }
@@ -226,10 +261,19 @@ export default function NewBooking() {
       if (isGuestBooking) {
         bookingData.guestName = form.guestName;
         bookingData.guestEmail = form.guestEmail;
-        bookingData.guestPhone = form.guestPhone;
+        bookingData.guestPhone = cleanPhone(form.guestPhone); // Clean phone before sending
       }
       
+      // Authorization header is already set globally by AuthContext
+      // No need to manually add it here
+      console.log('📤 Sending booking to API');
+      console.log('   User logged in?', !!user);
+      console.log('   Token in localStorage?', !!localStorage.getItem('token'));
+      console.log('   Booking Data:', bookingData);
+
       await axios.post('/api/bookings', bookingData);
+      
+      console.log('✅ Booking API call successful');
       setStatus('success');
       toast.success('Booking created successfully! Check your email for confirmation.');
       
@@ -242,7 +286,8 @@ export default function NewBooking() {
         }
       }, 2000);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Booking failed');
+      console.log("hfsdfsf",error.response)
+      toast.error(error.response?.data?.message1 || 'Booking failed');
       setStatus('error');
     } finally {
       setLoading(false);
@@ -286,8 +331,8 @@ export default function NewBooking() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
 
-                <RoomSelector onChange={(r) => setForm({ ...form, numberOfRooms: r })} variant="light" />
-
+                {/* <RoomSelector onChange={(r) => setForm({ ...form, numberOfRooms: r })} variant="light" /> */}
+                <RoomSelector value={form.numberOfRooms} onChange={(r) => setForm({ ...form, numberOfRooms: r })} variant="light" />
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Check-in Date *</label>
@@ -310,8 +355,8 @@ export default function NewBooking() {
                   </div>
                 </div>
 
-                <GuestSelector onChange={(g) => setForm({ ...form, guests: g })} variant="light" />
-
+                {/* <GuestSelector onChange={(g) => setForm({ ...form, guests: g })} variant="light" /> */}
+                <GuestSelector value={form.guests} onChange={(g) => setForm({ ...form, guests: g })} variant="light" />
                 {/* Guest Information (for non-logged-in users) */}
                 {isGuestBooking && (
                   <div className="bg-amber-50 border-2 border-amber-300 rounded-sm p-4 space-y-3">
@@ -349,9 +394,13 @@ export default function NewBooking() {
                         required 
                         placeholder="+91 70603 79939"
                         value={form.guestPhone}
-                        onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
-                        className="form-input-light w-full" 
+                        onChange={handlePhoneChange}
+                        className={`form-input-light w-full ${phoneError ? 'border-red-500' : ''}`}
                       />
+                      {phoneError && (
+                        <p className="text-red-500 text-xs mt-1 font-hind">{phoneError}</p>
+                      )}
+                      <p className="text-xs text-amber-700 font-hind mt-1">Enter 10-digit Indian mobile number</p>
                     </div>
                     <p className="text-xs text-amber-700 font-hind">
                       💡 <Link to="/register" className="underline hover:text-amber-900">Create an account</Link> to track your bookings easily

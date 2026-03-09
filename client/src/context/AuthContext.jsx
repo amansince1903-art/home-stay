@@ -2,9 +2,15 @@ import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 
-// Configure axios base URL for production
-if (API_BASE_URL) {
+// Configure axios base URL ONLY for production
+// In development, leave empty to use Vite proxy
+if (API_BASE_URL && import.meta.env.PROD) {
+  console.log('🔧 Production mode - Setting axios baseURL to:', API_BASE_URL);
   axios.defaults.baseURL = API_BASE_URL;
+} else {
+  console.log('🔧 Development mode - Using Vite proxy (no baseURL set)');
+  console.log('   API_BASE_URL:', API_BASE_URL || '(empty)');
+  console.log('   axios.defaults.baseURL:', axios.defaults.baseURL || '(not set)');
 }
 
 const AuthContext = createContext();

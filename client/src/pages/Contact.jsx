@@ -7,7 +7,19 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle')
 
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  const handleChange = e => {
+    const { name, value } = e.target;
+    
+    // Restrict phone to 10 digits only
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length <= 10) {
+        setForm(f => ({ ...f, [name]: digitsOnly }));
+      }
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -83,11 +95,22 @@ export default function Contact() {
                 {[
                   { label: 'Full Name *',  name: 'name',  type: 'text',  placeholder: 'Aapka naam',       required: true },
                   { label: 'Email *',      name: 'email', type: 'email', placeholder: 'email@example.com', required: true },
-                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '+91 70603 79939',   required: false },
+                  { label: 'Phone',        name: 'phone', type: 'tel',   placeholder: '9876543210',   required: false, maxLength: 10, pattern: '[0-9]*', inputMode: 'numeric' },
                 ].map(f => (
                   <div key={f.name} className="flex flex-col gap-1">
                     <label className="text-mud text-[0.6rem] tracking-widest uppercase font-hind">{f.label}</label>
-                    <input type={f.type} name={f.name} placeholder={f.placeholder} required={f.required} value={form[f.name]} onChange={handleChange} className="form-input-light" />
+                    <input 
+                      type={f.type} 
+                      name={f.name} 
+                      placeholder={f.placeholder} 
+                      required={f.required} 
+                      maxLength={f.maxLength}
+                      pattern={f.pattern}
+                      inputMode={f.inputMode}
+                      value={form[f.name]} 
+                      onChange={handleChange} 
+                      className="form-input-light" 
+                    />
                   </div>
                 ))}
                 <div className="flex flex-col gap-1">

@@ -1,207 +1,314 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
 import Room from '../models/Room.js';
-import { protect, admin } from '../middleware/auth.js';
+import { protect, optionalProtect } from '../middleware/auth.js';
 import { sendBookingConfirmation } from '../utils/email.js';
+import { validatePhone, sanitizePhone } from '../utils/validation.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
-  try {
-    const { roomId, checkIn, checkOut, guests, numberOfRooms = 1, specialRequests, guestName, guestEmail, guestPhone } = req.body;
+// 🔍 DEBUG: Log all booking requests
+router.use((req, res, next) => {
+  console.log('\n📋 Booking Route Hit:');
+  console.log('   Method:', req.method);
+  console.log('   Path:', req.path);
+  console.log('   req.user exists?', !!req.user);
+  console.log('   Authorization header?', !!req.headers.authorization);
+  console.log('   Body:', JSON.stringify(req.body, null, 2));
+  next();
+});
 
-    // Check if it's a guest booking or authenticated user
+// Create booking (supports both logged-in users and guests)
+router.post('/', optionalProtect, async (req, res) => {
+  try {
+    const { 
+      roomId, 
+      checkIn, 
+      checkOut, 
+      numberOfRooms = 1,
+      guests, 
+      specialRequests,
+      // Guest information (for non-logged-in users)
+      guestName,
+      guestEmail,
+      guestPhone
+    } = req.body;
+
+    console.log('\n🔍 Processing Booking:');
+    console.log('   User authenticated?', !!req.user);
+    console.log('   Guest booking?', !req.user);
+
+    // Determine if this is a guest booking
     const isGuestBooking = !req.user;
-    
-    // Validate guest information if not logged in
+
+    // Validate required fields based on booking type
     if (isGuestBooking) {
+      // Guest booking - require guest information
       if (!guestName || !guestEmail || !guestPhone) {
-        return res.status(400).json({ success: false, message: 'Guest name, email, and phone are required' });
+        console.log('❌ Guest booking missing required fields');
+        return res.status(400).json({
+          message1: 'sdafdsfsdf name, email, and phone are required',
+          success: false,
+        });
+      }
+
+      // Validate phone number
+      const phoneValidation = validatePhone(guestPhone);
+      if (!phoneValidation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: phoneValidation.message
+        });
       }
     }
 
-    // Validate dates
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-
-    if (checkInDate < today) {
-      return res.status(400).json({ success: false, message: 'Check-in date must be today or later' });
+    // Validate common required fields
+    if (!roomId || !checkIn || !checkOut || !guests) {
+      return res.status(400).json({
+        success: false,
+        message: 'Room, check-in, check-out dates, and number of guests are required'
+      });
     }
 
-    if (checkOutDate <= checkInDate) {
-      return res.status(400).json({ success: false, message: 'Check-out date must be after check-in date' });
-    }
-
-    // Validate room exists
+    // Fetch room details
     const room = await Room.findById(roomId);
     if (!room) {
-      return res.status(404).json({ success: false, message: 'Room not found' });
-    }
-
-    // Validate guest capacity — adults only, multiplied by number of rooms
-    const maxGuests = room.capacity * numberOfRooms;
-    if (guests > maxGuests) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `${numberOfRooms} room(s) can accommodate maximum ${maxGuests} adults. You selected ${guests}.` 
+      return res.status(404).json({
+        success: false,
+        message: 'Room not found'
       });
     }
 
-    // Check availability - count overlapping bookings
-    const overlappingBookings = await Booking.countDocuments({
-      room: roomId,
-      status: { $in: ['pending', 'confirmed', 'checked-in'] },
-      $or: [
-        { checkIn: { $lt: checkOutDate }, checkOut: { $gt: checkInDate } }
-      ]
-    });
-
-    // Check inventory
-    if (overlappingBookings >= room.inventory) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Room not available for selected dates. All ${room.inventory} rooms are booked.` 
-      });
-    }
-
-    // Calculate price
+    // Calculate nights and total price
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
     const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-    if (nights < 1) {
-      return res.status(400).json({ success: false, message: 'Booking must be at least 1 night' });
-    }
-    const totalPrice = room.price * nights * numberOfRooms;
+    const totalPrice = room.price * numberOfRooms * nights;
 
-    // Create booking
+    // Create booking object
     const bookingData = {
       room: roomId,
-      numberOfRooms: numberOfRooms || 1,
       checkIn: checkInDate,
       checkOut: checkOutDate,
+      numberOfRooms,
       guests,
       totalPrice,
-      specialRequests
+      specialRequests,
+      isGuestBooking
     };
 
     // Add user or guest information
     if (isGuestBooking) {
-      bookingData.isGuestBooking = true;
       bookingData.guestName = guestName;
       bookingData.guestEmail = guestEmail;
-      bookingData.guestPhone = guestPhone;
+      bookingData.guestPhone = sanitizePhone(guestPhone);
+      console.log('✅ Guest booking data prepared');
     } else {
       bookingData.user = req.user._id;
-      bookingData.isGuestBooking = false;
+      console.log('✅ User booking data prepared for user:', req.user._id);
     }
 
+    // Create booking
     const booking = await Booking.create(bookingData);
+    
+    // Populate room details for email
+    await booking.populate('room');
+    
+    // Populate user details if logged in
+    if (!isGuestBooking) {
+      await booking.populate('user');
+    }
 
-    // Populate booking details for email
-    const populatedBooking = await Booking.findById(booking._id)
-      .populate('user', 'name email phone')
-      .populate('room', 'name price');
+    console.log('✅ Booking created:', booking.bookingId);
 
     // Send confirmation email
-    await sendBookingConfirmation(populatedBooking);
+    try {
+      const emailData = {
+        bookingId: booking.bookingId,
+        guestName: isGuestBooking ? guestName : req.user.name,
+        email: isGuestBooking ? guestEmail : req.user.email,
+        roomName: room.name,
+        checkIn: checkInDate.toLocaleDateString('en-IN'),
+        checkOut: checkOutDate.toLocaleDateString('en-IN'),
+        guests,
+        numberOfRooms,
+        nights,
+        totalPrice,
+        specialRequests
+      };
 
-    res.status(201).json({ success: true, data: populatedBooking });
+      await sendBookingConfirmation(emailData);
+      console.log('✅ Confirmation email sent to:', emailData.email);
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError.message);
+      // Don't fail the booking if email fails
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Booking created successfully',
+      data: booking
+    });
+
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error('❌ Booking creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating booking',
+      error: error.message
+    });
   }
 });
 
+// Get all bookings (admin only)
+router.get('/', protect, async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('room')
+      .populate('user', '-password')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: bookings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bookings',
+      error: error.message
+    });
+  }
+});
+
+// Get user's own bookings
 router.get('/my-bookings', protect, async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
-      .populate('room', 'name price image')
+      .populate('room')
       .sort({ createdAt: -1 });
-    res.json({ success: true, data: bookings });
+
+    res.json({
+      success: true,
+      data: bookings
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching your bookings',
+      error: error.message
+    });
   }
 });
 
-router.get('/all', protect, admin, async (req, res) => {
-  try {
-    const bookings = await Booking.find()
-      .populate('user', 'name email phone')
-      .populate('room', 'name price')
-      .sort({ createdAt: -1 });
-    res.json({ success: true, data: bookings });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
+// Get single booking
 router.get('/:id', protect, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate('user', 'name email phone')
-      .populate('room', 'name price image amenities');
+      .populate('room')
+      .populate('user', '-password');
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
     }
 
-    if (booking.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
+    // Check if user owns this booking or is admin
+    if (booking.user && booking.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this booking'
+      });
     }
 
-    res.json({ success: true, data: booking });
+    res.json({
+      success: true,
+      data: booking
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching booking',
+      error: error.message
+    });
   }
 });
 
-router.put('/:id/status', protect, admin, async (req, res) => {
+// Update booking status (admin only)
+router.put('/:id/status', protect, async (req, res) => {
   try {
     const { status } = req.body;
+    
+    if (!['pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true }
-    )
-    .populate('user', 'name email')
-    .populate('room', 'name');
+    ).populate('room').populate('user', '-password');
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
     }
 
-    // Send email notification when status changes to confirmed
-    if (status === 'confirmed') {
-      await sendBookingConfirmation(booking);
-    }
-
-    res.json({ success: true, data: booking });
+    res.json({
+      success: true,
+      message: 'Booking status updated',
+      data: booking
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error updating booking status',
+      error: error.message
+    });
   }
 });
 
-router.put('/:id/cancel', protect, async (req, res) => {
+// Cancel booking
+router.delete('/:id', protect, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
     }
 
-    if (booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
-    if (booking.status === 'cancelled') {
-      return res.status(400).json({ success: false, message: 'Booking already cancelled' });
+    // Check if user owns this booking or is admin
+    if (booking.user && booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to cancel this booking'
+      });
     }
 
     booking.status = 'cancelled';
     await booking.save();
 
-    res.json({ success: true, data: booking });
+    res.json({
+      success: true,
+      message: 'Booking cancelled successfully',
+      data: booking
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling booking',
+      error: error.message
+    });
   }
 });
 

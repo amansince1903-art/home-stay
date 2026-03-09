@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 
-export default function RoomSelector({ onChange, variant = 'dark' }) {
+export default function RoomSelector({ onChange, variant = 'dark', value }) {
   const [open, setOpen] = useState(false)
-  const [rooms, setRooms] = useState(1)
+  const [rooms, setRooms] = useState(value || 1)
   const ref = useRef(null)
 
   // Close on outside click
@@ -11,6 +11,10 @@ export default function RoomSelector({ onChange, variant = 'dark' }) {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+  // Sync when value changes from outside (URL params)
+useEffect(() => {
+  if (value) setRooms(value)
+}, [value])
 
   const update = (val) => {
     const newVal = Math.min(6, Math.max(1, val))

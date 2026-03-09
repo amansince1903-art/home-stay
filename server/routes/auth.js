@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { validatePhone, validateEmail, sanitizePhone } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -15,12 +16,34 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return res.status(400).json({ success: false, message: emailValidation.message });
+    }
+
+    // Validate phone if provided
+    if (phone) {
+      const phoneValidation = validatePhone(phone);
+      if (!phoneValidation.valid) {
+        return res.status(400).json({ success: false, message: phoneValidation.message });
+      }
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    const user = await User.create({ name, email, password, phone });
+    // Sanitize phone number before saving
+    const sanitizedPhone = phone ? sanitizePhone(phone) : '';
+
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      phone: sanitizedPhone 
+    });
 
     res.status(201).json({
       success: true,

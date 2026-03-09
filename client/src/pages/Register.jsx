@@ -2,18 +2,44 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { validatePhone, cleanPhone } from '../utils/validation';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 10) {
+      setForm({ ...form, phone: value });
+      if (phoneError) setPhoneError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate phone if provided
+    if (form.phone) {
+      const phoneValidation = validatePhone(form.phone);
+      if (!phoneValidation.valid) {
+        setPhoneError(phoneValidation.message);
+        toast.error(phoneValidation.message);
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
-      await register(form);
+      // Clean phone number before sending
+      const submitData = {
+        ...form,
+        phone: form.phone ? cleanPhone(form.phone) : ''
+      };
+      await register(submitData);
       toast.success('Registration successful!');
       navigate('/');
     } catch (error) {
@@ -61,10 +87,17 @@ export default function Register() {
             <input
               type="tel"
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="form-input-light w-full"
-              placeholder="+91 70603 79939"
+              onChange={handlePhoneChange}
+              maxLength="10"
+              pattern="[0-9]*"
+              inputMode="numeric"
+              className={`form-input-light w-full ${phoneError ? 'border-red-500' : ''}`}
+              placeholder="9876543210"
             />
+            {phoneError && (
+              <p className="text-red-500 text-xs mt-1 font-hind">{phoneError}</p>
+            )}
+            <p className="text-mud/60 text-xs mt-1 font-hind">Enter 10-digit mobile number (digits only)</p>
           </div>
 
           <div>
