@@ -47,7 +47,7 @@ router.post('/', optionalProtect, async (req, res) => {
       if (!guestName || !guestEmail || !guestPhone) {
         console.log('❌ Guest booking missing required fields');
         return res.status(400).json({
-          message1: 'sdafdsfsdf name, email, and phone are required',
+          message1: 'Guest name, email, and phone are required',
           success: false,
         });
       }
