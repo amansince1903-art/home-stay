@@ -390,13 +390,19 @@ export default function NewBooking() {
                     <div>
                       <label className="block text-mud text-xs tracking-widest uppercase font-hind mb-1">Phone Number *</label>
                       <input 
-                        type="tel" 
-                        required 
-                        placeholder="+91 70603 79939"
-                        value={form.guestPhone}
-                        onChange={handlePhoneChange}
-                        className={`form-input-light w-full ${phoneError ? 'border-red-500' : ''}`}
-                      />
+                              type="tel"
+                              required
+                              placeholder="70603 79939"
+                              value={form.guestPhone}
+                              maxLength={10}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                setForm({ ...form, guestPhone: value });
+                                if (phoneError) setPhoneError('');
+                              }}
+                              className={`form-input-light w-full ${phoneError ? 'border-red-500' : ''}`}
+
+                            />
                       {phoneError && (
                         <p className="text-red-500 text-xs mt-1 font-hind">{phoneError}</p>
                       )}

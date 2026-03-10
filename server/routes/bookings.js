@@ -47,7 +47,7 @@ router.post('/', optionalProtect, async (req, res) => {
       if (!guestName || !guestEmail || !guestPhone) {
         console.log('❌ Guest booking missing required fields');
         return res.status(400).json({
-          message1: 'Guest name, email, and phone are required',
+          message: 'Guest name, email, and phone are required',
           success: false,
         });
       }
@@ -287,8 +287,10 @@ router.delete('/:id', protect, async (req, res) => {
       });
     }
 
-    // Check if user owns this booking or is admin
-    if (booking.user && booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    const isOwner = booking.user && booking.user.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to cancel this booking'

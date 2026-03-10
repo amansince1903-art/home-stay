@@ -28,7 +28,7 @@ export default function Dashboard() {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
     
     try {
-      await axios.put(`/api/bookings/${id}/cancel`);
+     await axios.delete(`/api/bookings/${id}`);
       toast.success('Booking cancelled');
       fetchBookings();
     } catch (error) {

@@ -13,7 +13,7 @@ export default function AdminDashboard() {
 
   const fetchBookings = async () => {
     try {
-      const { data } = await axios.get('/api/bookings/all');
+     const { data } = await axios.get('/api/bookings');
       setBookings(data.data);
     } catch (error) {
       toast.error('Failed to load bookings');
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
 
   const filteredBookings = filter === 'all' 
     ? bookings 
-    : bookings.filter(b => b.status === filter);
+    : bookings.filter(b => (b.status || '').toLowerCase() === filter.toLowerCase());
 
   const stats = {
     total: bookings.length,
