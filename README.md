@@ -266,7 +266,7 @@ This project is licensed under the MIT License.
 
 ## 👥 Authors
 
-- Your Name - Initial work
+- aman singh - Initial work
 
 ## 🙏 Acknowledgments
 
